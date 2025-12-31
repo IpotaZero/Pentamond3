@@ -1,0 +1,68 @@
+.selectWithDescription {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.selectWithDescriptionOptions {
+    display: flex;
+    justify-content: center;
+    align-items: end;
+    flex-direction: column;
+    gap: 3vh;
+    flex: 1;
+    margin-right: 10vh;
+    & * {
+        font-size: 5vh;
+    }
+
+    &:has(button:nth-child(1):focus) ~ .selectOptionDescriptions :nth-child(1) {
+        display: flex;
+    }
+    &:has(button:nth-child(2):focus) ~ .selectOptionDescriptions :nth-child(2) {
+        display: flex;
+    }
+    &:has(button:nth-child(3):focus) ~ .selectOptionDescriptions :nth-child(3) {
+        display: flex;
+    }
+    &:has(button:nth-child(4):focus) ~ .selectOptionDescriptions :nth-child(4) {
+        display: flex;
+    }
+    &:has(button:nth-child(5):focus) ~ .selectOptionDescriptions :nth-child(5) {
+        display: flex;
+    }
+    &:has(button:nth-child(6):focus) ~ .selectOptionDescriptions :nth-child(6) {
+        display: flex;
+    }
+    &:has(button:nth-child(7):focus) ~ .selectOptionDescriptions :nth-child(6) {
+        display: flex;
+    }
+    &:has(button:nth-child(8):focus) ~ .selectOptionDescriptions :nth-child(6) {
+        display: flex;
+    }
+}
+
+.selectOptionDescriptions {
+    flex: 1.5;
+    & > * {
+        display: none;
+        width: 100%;
+        height: 100%;
+    }
+    & .text {
+        margin-left: 5vh;
+        margin-right: auto;
+        /* text-wrap: nowrap; */
+        font-size: 4vh;
+    }
+}
+
+.selectOptionDescriptions * {
+    animation-direction: normal;
+    animation-duration: 400ms;
+    animation-name: rightFadeIn;
+    animation-timing-function: ease-out;
+    animation-fill-mode: forwards;
+}

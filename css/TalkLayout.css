@@ -1,0 +1,33 @@
+[data-speaker="モチャ"] {
+    background-color: #6b6 !important;
+    border-color: #aea !important;
+}
+
+[data-speaker="ナレーション"] {
+    &#namePanel {
+        display: none !important;
+    }
+}
+
+[data-speaker="アナウンス"],
+[data-speaker="案内係"] {
+    background-color: #ba6 !important;
+}
+
+[data-speaker="ロボット"] {
+    background-color: #899 !important;
+    border-color: #566 !important;
+    border-radius: 0 !important;
+}
+
+[data-speaker="ペロリン"] {
+    background-color: #686 !important;
+    border-color: #9c9 !important;
+}
+
+#namePanel,
+#talkPanel,
+#talkPanel * {
+    border-radius: 2vh;
+    color: #cee;
+}

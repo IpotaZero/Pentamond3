@@ -1,0 +1,197 @@
+import { EventManager } from "../../EventManager";
+import { gameEvents, GameMode } from "../GameMode";
+import { GamePlayer } from "../GamePlayer";
+import { pageManager } from "../../PageManager";
+import { gamepadConfigs, graphicSetting } from "../../Run";
+import * as Setting from "../../Settings";
+import { qsAll, removeMousePointerTemporary } from "../../Utils";
+import { playBackground } from "../../PlayBackground";
+
+export class Mode2 extends GameMode {
+    constructor(players: GamePlayer[]) {
+        super(players);
+        players.forEach((_, i) => {
+            this.addPlayerBehavior(i);
+        });
+    }
+
+    start(): void {
+        this.players.forEach((player) => {
+            player.start();
+        });
+        if (graphicSetting.playBackground) {
+            playBackground.start();
+        }
+    }
+    stop(): void {
+        this.players.forEach((player) => {
+            player.stop();
+        });
+        if (graphicSetting.playBackground) {
+            playBackground.stop();
+        }
+    }
+    proceedPlayerFinish(): void {
+        if (this.state.hasFinished) {
+            return;
+        }
+        this.winners = this.players.filter((player) => player.state.hasFinished);
+        this.state.hasFinished = true;
+        this.stop();
+        if (this.players.length != 1) {
+            this.players
+                .filter((p) => !p.state.hasFinished)
+                .forEach((p) => {
+                    p.animations.finish.play();
+                });
+        }
+
+        this.players.forEach((p) => {
+            p.label.updateContents({
+                gameTime: "",
+                playTime: p.g$playTimeString,
+                line: p.playInfo.line + "",
+                lastTrick: "",
+                chain: p.playInfo.chain + "",
+                score: p.playInfo.score + "",
+            });
+            p.playInfo.playTime = p.loop.g$elapsedTime;
+        });
+        qsAll(".resultLabel").forEach((resultLabel) => {
+            if (this.winners.length < this.players.length) {
+                resultLabel.innerHTML = `Player ${this.winners.map((player) => this.players.indexOf(player) + 1).toString()} won! : ${this.winners[0].g$playTimeString}`;
+            } else if (1 < this.players.length) {
+                resultLabel.innerHTML = `Draw : ${this.winners[0].g$playTimeString}`;
+            } else {
+                resultLabel.innerHTML = `Time : ${this.winners[0].g$playTimeString}`;
+            }
+        });
+        EventManager.executeListeningEvents("gameFinish", this.eventIds);
+    }
+
+    addPlayerBehavior(index: number): void {
+        const p = this.players[index];
+        const input = p.input.g$manager;
+        const operate = (keyCode: string) => {
+            if (["ArrowLeft", ...gamepadConfigs[index].moveLeft].includes(keyCode)) {
+                p.operator.move("left");
+            } else if (["ArrowRight", ...gamepadConfigs[index].moveRight].includes(keyCode)) {
+                p.operator.move("right");
+            } else if (["ArrowDown", ...gamepadConfigs[index].moveDown].includes(keyCode)) {
+                p.operator.move("down");
+            } else if (["ArrowUp", ...gamepadConfigs[index].put].includes(keyCode)) {
+                p.operator.put();
+            } else if (["KeyC", ...gamepadConfigs[index].spinLeft].includes(keyCode)) {
+                p.operator.spin("left");
+            } else if (["KeyV", ...gamepadConfigs[index].spinRight].includes(keyCode)) {
+                p.operator.spin("right");
+            } else if (["KeyB", ...gamepadConfigs[index].unput].includes(keyCode)) {
+                p.operator.unput();
+            } else if (["Space", ...gamepadConfigs[index].hold].includes(keyCode)) {
+                p.operator.hold();
+            } else if (["Enter", ...gamepadConfigs[index].removeLine].includes(keyCode)) {
+                p.operator.removeLine();
+            } else if (["KeyP", ...gamepadConfigs[index].pause].includes(keyCode)) {
+                if (!p.loop.g$isLooping || this.state.hasFinished) {
+                    return;
+                }
+                this.stop();
+                pageManager.setPage("pause");
+            } else {
+                return;
+            }
+            removeMousePointerTemporary();
+            p.updateCanvas();
+        };
+
+        p.label.s$visible = { gameTime: false, playTime: true, line: true, lastTrick: false, chain: true, score: true };
+        const updateLabel = () => {
+            p.label.updateContents({
+                gameTime: "",
+                playTime: p.g$playTimeString,
+                line: p.playInfo.line + "",
+                lastTrick: "",
+                chain: p.playInfo.chain + "",
+                score: p.playInfo.score + "",
+            });
+        };
+        let lastOperateTime = 0;
+        p.canvas.guideBorder = true;
+        gameEvents.push(
+            input.addEvent(["onKeydown", "onButtondown", "onStickActive"], () => {
+                if (!p.loop.g$isLooping) {
+                    return;
+                }
+                operate(input.g$latestPressingKey);
+            }),
+
+            p.loop.addEvent(["loop"], () => {
+                const moveKeys = ["ArrowLeft", "ArrowRight", "ArrowDown", ...gamepadConfigs[index].moveLeft, ...gamepadConfigs[index].moveRight, ...gamepadConfigs[index].moveDown];
+                const latestKey = input.getLatestPressingKey(moveKeys);
+                const pressTime = Date.now() - input.getPressTime(latestKey);
+                if (pressTime >= Setting.input.delayTime && latestKey != "") {
+                    if (pressTime - lastOperateTime >= Setting.input.repeatTime) {
+                        operate(latestKey);
+                        lastOperateTime = pressTime;
+                    }
+                } else {
+                    lastOperateTime = 0;
+                }
+                p.playInfo.playTime = p.loop.g$elapsedTime;
+                updateLabel();
+            }),
+
+            p.operator.addEvent(["put"], () => {
+                p.playInfo.put += 1;
+                p.playInfo.lastTrick = null;
+                p.playInfo.chain = 0;
+                p.playInfo.score += 10;
+            }),
+
+            p.operator.addEvent(["unput"], () => {
+                p.playInfo.put -= 1;
+                p.playInfo.score -= 10;
+                p.playInfo.unput += 1;
+            }),
+
+            p.operator.addEvent(["hold"], () => {
+                p.playInfo.hold += 1;
+            }),
+
+            p.operator.addEvent(["removeLine"], () => {
+                const lastTrick = p.operator.g$lastTrick;
+                if (lastTrick) {
+                    if (["一列揃え(上)", "一列揃え(下)"].includes(lastTrick.name)) {
+                        p.playInfo.line += 1;
+                        p.playInfo.score += p.playInfo.chain * 100;
+                        p.playInfo.score += (lastTrick.time + lastTrick.attack) * 50;
+                        p.playInfo.chain += 1;
+                        p.playInfo.maxChain = Math.max(p.playInfo.maxChain, p.playInfo.chain);
+                        p.canvas.guideBorderHeight = 15 - p.playInfo.line;
+                        p.canvas.paintPlayCanvas();
+                        if (graphicSetting.removeShake) {
+                            p.animations.removeLineWithTrick.play();
+                        }
+                    } else {
+                        p.playInfo.chain = 0;
+                        if (graphicSetting.removeShake) {
+                            p.animations.removeLineWithoutTrick.play();
+                        }
+                    }
+                } else {
+                    p.playInfo.chain = 0;
+                    if (graphicSetting.removeShake) {
+                        p.animations.removeLineWithoutTrick.play();
+                    }
+                }
+                p.playInfo.lastTrick = p.operator.g$lastTrick;
+                p.playInfo.remove += 1;
+
+                if (p.playInfo.line >= 15) {
+                    p.finish();
+                    this.proceedPlayerFinish();
+                }
+            })
+        );
+    }
+}
