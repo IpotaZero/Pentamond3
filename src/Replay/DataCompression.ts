@@ -1,7 +1,7 @@
-import { BlockKind } from "./BlockOperate/Block";
-import { AutoKeyboardInputData } from "./Interaction/AutoKeyboardManager";
-import { ReplayData } from "./Replay/Replay";
-import { PlaySetting } from "./Run";
+import { BlockKind } from "../BlockOperate/Block";
+import { AutoKeyboardInputData } from "../Interaction/AutoKeyboardManager";
+import { ReplayData } from "./Replay";
+import { PlaySetting } from "../Run";
 import LZString from "lz-string";
 
 // export type ReplayData = {

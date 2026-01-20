@@ -1,4 +1,4 @@
-import { replayDataDecryption, replayDataEncryption } from "../DataCompression";
+import { replayDataDecryption, replayDataEncryption } from "./DataCompression";
 import { GameMode, OperateName } from "../Game/GameMode";
 import { GamePlayer } from "../Game/GamePlayer";
 import { pageManager } from "../PageManager";
