@@ -1,18 +1,32 @@
-import { pageManager } from "../PageManager";
-import { qs, sleep, qsAll } from "../Utils";
-import { Replay, ReplayData } from "./Replay";
-import { ReplayDataHandler } from "./ReplayDataHandler";
+import { qs, qsAll } from "../Utils";
+import { ReplayData } from "./Replay";
 
 export class ReplayDom {
-    static setupSavedReplay(replayDataList: ReplayData[]) {
+    static setupSavedReplayPage(replayDataList: ReplayData[]) {
         const container = qs("#savedReplay .options");
         container.querySelectorAll(".replayButtonContainer").forEach((element) => {
             element.remove();
         });
 
         const replayContainers = Array.from({ length: replayDataList.length }, () => document.createElement("div"));
-        const replayButtons = Array.from({ length: replayDataList.length }, () => document.createElement("button"));
-        const deleteButtons = Array.from({ length: replayDataList.length }, () => document.createElement("button"));
+
+        const replayButtons = Array.from({ length: replayDataList.length }, (_, i) => {
+            const now = new Date(replayDataList[i].date);
+
+            const replayButton = document.createElement("button");
+            replayButton.classList.add("replayButton");
+            replayButton.innerHTML = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${now.getMinutes() < 10 ? "0" + now.getMinutes() : now.getMinutes()}:${
+                now.getSeconds() < 10 ? "0" + now.getSeconds() : now.getSeconds()
+            }`;
+
+            return replayButton;
+        });
+
+        const deleteButtons = Array.from({ length: replayDataList.length }, () => {
+            const deleteButton = document.createElement("button");
+            deleteButton.classList.add("replayDeleteButton");
+            return deleteButton;
+        });
 
         replayContainers.forEach((element, i) => {
             element.classList.add("replayButtonContainer");
@@ -30,64 +44,7 @@ export class ReplayDom {
             container.prepend(element);
         });
 
-        deleteButtons.forEach((deleteButton, i) => {
-            deleteButton.classList.add("replayDeleteButton");
-            deleteButton.addEventListener("click", () => {
-                const confirmButton = qs("#replayDeleteConfirmButton") as HTMLButtonElement;
-                const back = qs("#replayDeleteAlert .back") as HTMLButtonElement;
-                pageManager.setPage("replayDeleteAlert");
-
-                confirmButton.disabled = true;
-                confirmButton.style.opacity = "0";
-                sleep(1500).then(() => {
-                    confirmButton.disabled = false;
-                    confirmButton.style.opacity = "1";
-                });
-                new Promise<void>((resolve, reject) => {
-                    let resolveFunc: any;
-                    let rejectFunc: any;
-                    resolveFunc = () => {
-                        resolve();
-                        confirmButton.removeEventListener("click", resolveFunc);
-                        back.removeEventListener("click", rejectFunc);
-                    };
-                    rejectFunc = () => {
-                        reject();
-                        confirmButton.removeEventListener("click", resolveFunc);
-                        back.removeEventListener("click", rejectFunc);
-                    };
-
-                    confirmButton.addEventListener("click", resolveFunc);
-                    back.addEventListener("click", rejectFunc);
-                }).then(
-                    () => {
-                        // lastOperateTime = Date.now();
-                        Replay.remove(replayDataList[i]);
-                        pageManager.backPages(2, { eventIgnore: true });
-                        Replay.setupSavedReplayData();
-                        const index = ReplayDataHandler.temporaryReplayData.findIndex((data) => data.date == replayDataList[i].date);
-                        qsAll(".replaySaveButton")[ReplayDataHandler.temporaryReplayData.length - index - 1]?.classList.remove("replaySavedButton");
-                        pageManager.setPage("savedReplay");
-                    },
-                    () => {}
-                );
-            });
-        });
-
-        replayButtons.forEach((replayButton, i) => {
-            replayButton.classList.add("replayButton");
-            const now = new Date(replayDataList[i].date);
-            replayButton.innerHTML = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${now.getMinutes() < 10 ? "0" + now.getMinutes() : now.getMinutes()}:${
-                now.getSeconds() < 10 ? "0" + now.getSeconds() : now.getSeconds()
-            }`;
-
-            replayButton.addEventListener("click", () => {
-                // lastOperateTime = Date.now();
-                Replay.startReplay(replayDataList[i]);
-            });
-        });
-
-        container.querySelectorAll<HTMLButtonElement>("button").forEach((button) => {
+        container.querySelectorAll("button").forEach((button) => {
             button.addEventListener("mouseover", () => {
                 button.focus();
             });
@@ -108,41 +65,28 @@ export class ReplayDom {
         });
 
         qs("#savedReplay .back").dataset.mapping = `[0,${replayDataList.length}]`;
+
+        return { deleteButtons, replayButtons };
     }
 
-    static setupReplay(date: number) {
-        //リプレイボタンの追加
-        const replayContainer = document.createElement("div");
-        replayContainer.classList = "replayButtonContainer";
+    static createReplayButton(date: number) {
+        const now = new Date(date);
+
         const replayButton = document.createElement("button");
         replayButton.classList.add("replayButton");
-        const now = new Date(date);
         replayButton.innerHTML = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${now.getMinutes() < 10 ? "0" + now.getMinutes() : now.getMinutes()}:${
             now.getSeconds() < 10 ? "0" + now.getSeconds() : now.getSeconds()
         }`;
 
-        replayButton.addEventListener("click", () => {
-            const replayButtons = qsAll("#replay .replayButton");
-            const index = replayButtons.findIndex((button) => button == replayButton);
-            // lastOperateTime = Date.now();
-            Replay.startReplay(ReplayDataHandler.temporaryReplayData.at(-index - 1)!);
-        });
-
         const saveButton = document.createElement("button");
         saveButton.classList.add("replaySaveButton");
-        saveButton.addEventListener("click", () => {
-            const saveButtons = qsAll("#replay .replaySaveButton");
-            const index = saveButtons.findIndex((button) => button == saveButton);
-            // lastOperateTime = Date.now();
-            if (Replay.save(ReplayDataHandler.temporaryReplayData.at(-index - 1)!)) {
-                Replay.setupSavedReplayData();
-                saveButton.classList.add("replaySavedButton");
-            }
-        });
 
+        //リプレイボタンの追加
+        const replayContainer = document.createElement("div");
+        replayContainer.classList = "replayButtonContainer";
         replayContainer.appendChild(replayButton);
         replayContainer.appendChild(saveButton);
-        replayContainer.querySelectorAll<HTMLButtonElement>("button").forEach((button) => {
+        replayContainer.querySelectorAll("button").forEach((button) => {
             button.addEventListener("mouseover", () => {
                 button.focus();
             });
@@ -164,6 +108,6 @@ export class ReplayDom {
             button.dataset.mapping = `[1,${i}]`;
         });
 
-        qs("#replay .back").dataset.mapping = `[0,${ReplayDataHandler.temporaryReplayData.length}]`;
+        return { replayButton, saveButton };
     }
 }

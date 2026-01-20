@@ -2,9 +2,8 @@ import { replayDataDecryption, replayDataEncryption } from "../DataCompression";
 import { GameMode, OperateName } from "../Game/GameMode";
 import { GamePlayer } from "../Game/GamePlayer";
 import { pageManager } from "../PageManager";
-import { players, game, PlaySetting } from "../Run";
+import { PlaySetting } from "../Run";
 import { ReplayData } from "./Replay";
-import * as Setting from "../Settings";
 
 export class ReplayDataHandler {
     static temporaryReplayData: ReplayData[] = [];
@@ -52,14 +51,14 @@ export class ReplayDataHandler {
     }
 
     static removeReplayData(data: ReplayData) {
-        const replayData = this.getReplayData();
+        const replayData = this.getReplayDataList();
 
         const json = JSON.stringify(replayData.filter((value) => value.date != data.date).map((d) => replayDataEncryption(d)));
 
         localStorage.setItem("Pentamond3-replayData", json);
     }
 
-    static getReplayData(): ReplayData[] {
+    static getReplayDataList(): ReplayData[] {
         const json = localStorage.getItem("Pentamond3-replayData");
 
         const encodedDataList: string[] = json ? JSON.parse(json) : [];
@@ -70,7 +69,7 @@ export class ReplayDataHandler {
     }
 
     static saveReplayData(data: ReplayData) {
-        const replayDataList = ReplayDataHandler.getReplayData();
+        const replayDataList = ReplayDataHandler.getReplayDataList();
 
         // 同じデータを保存しない
         if (replayDataList.map((data) => data.date).includes(data.date)) {

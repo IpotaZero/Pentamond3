@@ -64,8 +64,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     Sound.init();
     // se = [new Sound({ src: "assets/sounds/決定ボタンを押す32.mp3" }), new Sound({ src: "assets/sounds/カーソル移動9.mp3" }), new Sound({ src: "assets/sounds/正解のときの音.mp3" })];
     inputManager.s$maxInputNumber = 1;
-    Replay.setupReplayData();
-    Replay.setupSavedReplayData();
+    Replay.setupSavedReplayPage();
     console.log(`The sum of size of replayData is ${new Blob([localStorage.getItem("Pentamond3-replayData") ?? "[]"]).size}byte`);
 });
 
@@ -138,7 +137,7 @@ export function gameStart() {
                 }
             });
         } else {
-            Replay.setupReplayData();
+            Replay.addReplayData(players!, game!);
         }
 
         createDetailedResult();
@@ -149,7 +148,7 @@ export function gameStart() {
         saveButton.innerText = "保存!";
         saveButton.onclick = () => {
             Replay.saveLastOne();
-            Replay.setupSavedReplayData();
+            Replay.setupSavedReplayPage();
             saveButton.innerText = "保存した!";
             saveButton.onclick = () => {};
         };
