@@ -8,13 +8,25 @@ import { Mode2 } from "./Game/Modes/Mode2";
 import { GamePlayer } from "./Game/GamePlayer";
 import * as Setting from "./Settings";
 import { GameMode, OperateName } from "./Game/GameMode";
-import { EventId, EventManager } from "./EventManager";
-import { Input } from "./Interaction/Input";
 import { playBackground } from "./PlayBackground";
 import { AutoKeyboardInputData, AutoKeyboardManager } from "./Interaction/AutoKeyboardManager";
-import { BlockKind } from "./BlockOperate/Block";
-import { replayDataDecryption, replayDataEncryption, sum } from "./DataCompression";
 import "./ScreenInteraction";
+import { Replay, ReplayData } from "./Replay/Replay";
+
+//ゲーム開始
+export type PlaySetting = {
+    playerNumber: number;
+    mode: number;
+    maxGameTime: number;
+    handy: number[];
+};
+
+export let playSetting = {
+    playerNumber: 1,
+    mode: 1,
+    maxGameTime: 50,
+    handy: [1],
+};
 
 //不正なページ遷移の防止
 document.addEventListener("keydown", (e) => {
@@ -22,6 +34,11 @@ document.addEventListener("keydown", (e) => {
         e.preventDefault();
     }
 });
+
+export function removeAllData() {
+    localStorage.removeItem("Pentamond3-replayData");
+    localStorage.removeItem("Pentamond3-graphicSetting");
+}
 
 qsAll("button").forEach((button) => {
     button.tabIndex = -1;
@@ -47,24 +64,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     Sound.init();
     // se = [new Sound({ src: "assets/sounds/決定ボタンを押す32.mp3" }), new Sound({ src: "assets/sounds/カーソル移動9.mp3" }), new Sound({ src: "assets/sounds/正解のときの音.mp3" })];
     inputManager.s$maxInputNumber = 1;
-    readSavedReplayData();
+    Replay.setupReplayData();
+    Replay.setupSavedReplayData();
     console.log(`The sum of size of replayData is ${new Blob([localStorage.getItem("Pentamond3-replayData") ?? "[]"]).size}byte`);
 });
-
-//ゲーム開始
-export type PlaySetting = {
-    playerNumber: number;
-    mode: number;
-    maxGameTime: number;
-    handy: number[];
-};
-
-let playSetting = {
-    playerNumber: 1,
-    mode: 1,
-    maxGameTime: 50,
-    handy: [1],
-};
 
 const modeClass = [Mode1, Mode2];
 export let game: GameMode | null;
@@ -72,12 +75,20 @@ export let players: GamePlayer[] | null;
 const debug = false;
 export let replay = false;
 
+let readingReplayData: ReplayData | null = null as ReplayData | null;
+
+export function set(option: { playSetting?: PlaySetting; replay?: boolean; readingReplayData?: ReplayData }) {
+    playSetting = option.playSetting ?? playSetting;
+    replay = option.replay ?? replay;
+    readingReplayData = option.readingReplayData ?? readingReplayData;
+}
+
 qsAddEvent(".playStart", "click", () => {
     pageManager.backLatestPage("playPrepare", { eventIgnore: true });
     gameStart();
 });
 
-function gameStart() {
+export function gameStart() {
     //プレイが終了していない場合は終了させる
     if (game) {
         game.stop();
@@ -114,21 +125,35 @@ function gameStart() {
         if (!game) {
             return;
         }
+
         if (replay && readingReplayData) {
             readingReplayData.finishPlayers.forEach((index) => {
                 players![index - 1].playInfo.playTime = readingReplayData!.finishTime;
                 players![index - 1].label.updateContents({ playTime: (readingReplayData!.finishTime / 1000).toFixed(2) });
             });
+
             qsAll(".resultLabel").forEach((resultLabel) => {
                 if (resultLabel.innerHTML.includes("Time")) {
                     resultLabel.innerHTML = `Time : ${(readingReplayData!.finishTime / 1000).toFixed(2)}`;
                 }
             });
         } else {
-            createReplayData();
+            Replay.setupReplayData();
         }
+
         createDetailedResult();
+
         inputManager.removeVirtualInputs();
+
+        const saveButton = qs("#result .saveReplayButton");
+        saveButton.innerText = "保存!";
+        saveButton.onclick = () => {
+            Replay.saveLastOne();
+            Replay.setupSavedReplayData();
+            saveButton.innerText = "保存した!";
+            saveButton.onclick = () => {};
+        };
+
         await sleep(1000);
         if (replay) {
             pageManager.setPage("replayResult");
@@ -300,132 +325,6 @@ function createDetailedResult() {
     });
 }
 
-//リプレイ
-export type ReplayData = {
-    inputData: AutoKeyboardInputData[][];
-    nextData: BlockKind[][];
-    playSetting: PlaySetting;
-    finishTime: number;
-    finishPlayers: number[];
-    nuisanceBlockData: number[][];
-    date: number;
-};
-
-let readingReplayData: ReplayData | null = null as ReplayData | null;
-
-const temporaryReplayData: ReplayData[] = [];
-
-function createReplayData() {
-    if (!game || !players) {
-        return;
-    }
-    const convertOperateName = (operateName: OperateName) => {
-        return operateName == "put"
-            ? "ArrowUp"
-            : operateName == "move-left"
-              ? "ArrowLeft"
-              : operateName == "move-right"
-                ? "ArrowRight"
-                : operateName == "move-down"
-                  ? "ArrowDown"
-                  : operateName == "spin-left"
-                    ? "KeyC"
-                    : operateName == "spin-right"
-                      ? "KeyV"
-                      : operateName == "unput"
-                        ? "KeyB"
-                        : operateName == "hold"
-                          ? "Space"
-                          : operateName == "removeLine"
-                            ? "Enter"
-                            : "";
-    };
-    const finishTime = Math.max(...players.map((player) => player.playInfo.playTime));
-    const replayData: ReplayData = {
-        inputData: game.operateMemories.map((operateMemory) => operateMemory.map(({ time, operateName }) => ({ time: time, keyCode: convertOperateName(operateName), type: "downup" }))),
-        playSetting: window.structuredClone(playSetting) as PlaySetting,
-        nextData: players.map((p) => p.operator.g$nextMemory),
-        finishTime: finishTime,
-        finishPlayers: players.map((player, i) => (player.playInfo.playTime == finishTime ? i + 1 : -1)).filter((value) => value != -1),
-        nuisanceBlockData: players.map((player) => player.nuisanceMondManager.g$spawnCoordinateMemory),
-        date: Date.now(),
-    };
-    //リプレイボタンの追加
-    const replayContainer = document.createElement("div");
-    replayContainer.classList = "replayButtonContainer";
-    const replayButton = document.createElement("button");
-    replayButton.classList.add("replayButton");
-    const now = new Date(replayData.date);
-    replayButton.innerHTML = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${now.getMinutes() < 10 ? "0" + now.getMinutes() : now.getMinutes()}:${
-        now.getSeconds() < 10 ? "0" + now.getSeconds() : now.getSeconds()
-    }`;
-    replayButton.addEventListener("click", () => {
-        const replayButtons = qsAll("#replay .replayButton");
-        const index = replayButtons.findIndex((button) => button == replayButton);
-        // lastOperateTime = Date.now();
-        startReplay(temporaryReplayData.at(-index - 1)!);
-    });
-    const saveButton = document.createElement("button");
-    saveButton.classList.add("replaySaveButton");
-    saveButton.addEventListener("click", () => {
-        const saveButtons = qsAll("#replay .replaySaveButton");
-        const index = saveButtons.findIndex((button) => button == saveButton);
-        // lastOperateTime = Date.now();
-        if (saveReplayData(temporaryReplayData.at(-index - 1)!)) {
-            readSavedReplayData();
-            saveButton.classList.add("replaySavedButton");
-        }
-    });
-
-    replayContainer.appendChild(replayButton);
-    replayContainer.appendChild(saveButton);
-    replayContainer.querySelectorAll<HTMLButtonElement>("button").forEach((button) => {
-        button.addEventListener("mouseover", () => {
-            button.focus();
-        });
-        button.addEventListener("mouseleave", () => {
-            if (document.activeElement == button) {
-                (button as HTMLButtonElement).blur();
-            }
-        });
-    });
-    qs("#replay .options").prepend(replayContainer);
-
-    temporaryReplayData.push(replayData);
-    if (temporaryReplayData.length == Setting.maximumTemporaryReplaySavable + 1) {
-        temporaryReplayData.shift();
-        qs("#replay .replayButtonContainer:first-child").remove();
-    }
-    //座標の割り振り直し
-    qsAll("#replay .replayButton").forEach((button, i) => {
-        button.dataset.mapping = `[0,${i}]`;
-    });
-    qsAll("#replay .replaySaveButton").forEach((button, i) => {
-        button.dataset.mapping = `[1,${i}]`;
-    });
-    qs("#replay .back").dataset.mapping = `[0,${temporaryReplayData.length}]`;
-}
-
-//指定したdataでreplayを開始
-function startReplay(data: ReplayData) {
-    // console.log(`${new Blob([replayDataEncryption(data)]).size}byte`);
-    readingReplayData = data;
-    inputManager.removeVirtualInputs();
-    inputManager.resetRegister();
-    playSetting = window.structuredClone(readingReplayData.playSetting);
-    inputManager.s$maxInputNumber = readingReplayData.playSetting.playerNumber;
-    const inputs = Array.from({ length: readingReplayData.playSetting.playerNumber }, () => new Input("autoKeyboard"));
-    inputs.forEach((input, i) => {
-        if (!(input.g$manager instanceof AutoKeyboardManager)) {
-            return;
-        }
-        input.g$manager.s$inputData = readingReplayData!.inputData[i];
-        inputManager.register(input);
-    });
-    replay = true;
-    gameStart();
-}
-
 qsAddEvent("#replayPause button:not(#replayResumeButton)", "click", () => {
     inputManager.removeVirtualInputs();
 });
@@ -436,165 +335,10 @@ qsAddEvent("#replayResumeButton", "click", () => {
 
 qsAddEvent(".replayStart", "click", () => {
     pageManager.backLatestPage("replay", { eventIgnore: true });
-    startReplay(readingReplayData!);
+    Replay.startReplay(readingReplayData!);
 });
 
 // localStorage.removeItem("Pentamond3-replayData");
-
-//保存されたリプレイ読み込み
-function readSavedReplayData() {
-    const replayData: ReplayData[] = JSON.parse(localStorage.getItem("Pentamond3-replayData") ?? "[]").map((parsedData: string) => replayDataDecryption(parsedData)) as ReplayData[];
-    const container = qs("#savedReplay .options");
-    container.querySelectorAll(".replayButtonContainer").forEach((element) => {
-        element.remove();
-    });
-
-    const replayContainers = Array.from({ length: replayData.length }, () => document.createElement("div"));
-    const replayButtons = Array.from({ length: replayData.length }, () => document.createElement("button"));
-    const deleteButtons = Array.from({ length: replayData.length }, () => document.createElement("button"));
-    replayContainers.forEach((element, i) => {
-        element.classList.add("replayButtonContainer");
-        element.appendChild(replayButtons[i]);
-        element.appendChild(deleteButtons[i]);
-        container.prepend(element);
-    });
-    deleteButtons.forEach((deleteButton, i) => {
-        deleteButton.classList.add("replayDeleteButton");
-        deleteButton.addEventListener("click", () => {
-            const confirmButton = qs("#replayDeleteConfirmButton") as HTMLButtonElement;
-            const back = qs("#replayDeleteAlert .back") as HTMLButtonElement;
-            pageManager.setPage("replayDeleteAlert");
-
-            confirmButton.disabled = true;
-            confirmButton.style.opacity = "0";
-            sleep(1500).then(() => {
-                confirmButton.disabled = false;
-                confirmButton.style.opacity = "1";
-            });
-            new Promise<void>((resolve, reject) => {
-                let resolveFunc: any;
-                let rejectFunc: any;
-                resolveFunc = () => {
-                    resolve();
-                    confirmButton.removeEventListener("click", resolveFunc);
-                    back.removeEventListener("click", rejectFunc);
-                };
-                rejectFunc = () => {
-                    reject();
-                    confirmButton.removeEventListener("click", resolveFunc);
-                    back.removeEventListener("click", rejectFunc);
-                };
-
-                confirmButton.addEventListener("click", resolveFunc);
-                back.addEventListener("click", rejectFunc);
-            }).then(
-                () => {
-                    // lastOperateTime = Date.now();
-                    removeReplayData(replayData[i]);
-                    pageManager.backPages(2, { eventIgnore: true });
-                    readSavedReplayData();
-                    const index = temporaryReplayData.findIndex((data) => data.date == replayData[i].date);
-                    qsAll(".replaySaveButton")[temporaryReplayData.length - index - 1]?.classList.remove("replaySavedButton");
-                    pageManager.setPage("savedReplay");
-                },
-                () => {}
-            );
-        });
-    });
-    replayButtons.forEach((replayButton, i) => {
-        replayButton.classList.add("replayButton");
-        const now = new Date(replayData[i].date);
-        replayButton.innerHTML = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${now.getMinutes() < 10 ? "0" + now.getMinutes() : now.getMinutes()}:${
-            now.getSeconds() < 10 ? "0" + now.getSeconds() : now.getSeconds()
-        }`;
-
-        replayButton.addEventListener("click", () => {
-            // lastOperateTime = Date.now();
-            startReplay(replayData[i]);
-        });
-    });
-    container.querySelectorAll<HTMLButtonElement>("button").forEach((button) => {
-        button.addEventListener("mouseover", () => {
-            button.focus();
-        });
-        button.addEventListener("mouseleave", () => {
-            if (document.activeElement == button) {
-                (button as HTMLButtonElement).blur();
-            }
-        });
-    });
-
-    //座標の割り振り
-    qsAll("#savedReplay .replayButton").forEach((button, i) => {
-        button.dataset.mapping = `[0,${i}]`;
-    });
-    qsAll("#savedReplay .replayDeleteButton").forEach((button, i) => {
-        button.dataset.mapping = `[1,${i}]`;
-    });
-
-    qs("#savedReplay .back").dataset.mapping = `[0,${replayData.length}]`;
-}
-
-//リプレイデータの保存
-function saveReplayData(data: ReplayData) {
-    const replayData: ReplayData[] = JSON.parse(localStorage.getItem("Pentamond3-replayData") ?? "[]").map((parsedData: string) => replayDataDecryption(parsedData)) as ReplayData[];
-    if (replayData.map((data) => data.date).includes(data.date)) {
-        return false;
-    }
-    if (replayData.length == 10) {
-        pageManager.setPage("replaySaveAlert");
-        return false;
-    }
-    if (replayData.length) {
-        //indexが大きいほどdateが大きくなるようにする
-        if (replayData[replayData.length - 1].date < data.date) {
-            replayData.push(data);
-        } else {
-            for (let i = replayData.length - 1; i >= 0; i--) {
-                if (data.date < replayData[i].date) {
-                    replayData.splice(i, 0, data);
-                    break;
-                }
-            }
-        }
-    } else {
-        replayData.push(data);
-    }
-    if (replayData.length == 11) {
-        replayData.shift();
-    }
-
-    const dataArray = replayData.map((data) => replayDataEncryption(data));
-    // dataArray.forEach((dataString) => {
-    //     const data = replayDataDecryption(dataString);
-    //     const now = new Date(data.date);
-    //     const date = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${now.getMinutes() < 10 ? "0" + now.getMinutes() : now.getMinutes()}:${
-    //         now.getSeconds() < 10 ? "0" + now.getSeconds() : now.getSeconds()
-    //     }`;
-    //     const size = new Blob([dataString]).size;
-    //     console.log(`The size of ${date} is ${size}`);
-    // });
-
-    try {
-        localStorage.setItem("Pentamond3-replayData", JSON.stringify(dataArray));
-    } catch (error) {
-        pageManager.setPage("replaySaveAlert2");
-        return false;
-    }
-    console.log(`The sum of size of replayData is ${new Blob([localStorage.getItem("Pentamond3-replayData") ?? "[]"]).size}byte`);
-    return true;
-}
-
-//リプレイデータの削除
-function removeReplayData(data: ReplayData) {
-    const replayData: ReplayData[] = JSON.parse(localStorage.getItem("Pentamond3-replayData") ?? "[]").map((parsedData: string) => replayDataDecryption(parsedData)) as ReplayData[];
-    localStorage.setItem("Pentamond3-replayData", JSON.stringify(replayData.filter((value) => value.date != data.date).map((data) => replayDataEncryption(data))));
-}
-
-function removeAllData() {
-    localStorage.removeItem("Pentamond3-replayData");
-    localStorage.removeItem("Pentamond3-graphicSetting");
-}
 
 //グラフィック設定
 export let graphicSetting = {
