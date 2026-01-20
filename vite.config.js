@@ -1,18 +1,15 @@
-import { defineConfig } from "vite"
+import { defineConfig } from 'vite';
 
 export default defineConfig({
-    base: "./",
+    base: './',
     build: {
-        target: ["esnext"],
+        target: ['esnext'],
         rollupOptions: {
-            input: "src/run.ts",
+            input: 'src/Run.ts',
             output: {
-                entryFileNames: "run.js",
-                dir: "dist/module",
-                chunkFileNames: `assets/[name].js`,
-                assetFileNames: `assets/[name].[ext]`,
-            },
+                entryFileNames: 'Run.js'
+            }
         },
-        sourcemap: true,
-    },
-})
+        sourcemap: true
+    }
+});
