@@ -138,20 +138,20 @@ export function gameStart() {
             });
         } else {
             Replay.addReplayData(players!, game!);
+
+            const saveButton = qs("#result .saveReplayButton");
+            saveButton.innerText = "保存!";
+            saveButton.onclick = () => {
+                Replay.saveLastOne();
+                Replay.setupSavedReplayPage();
+                saveButton.innerText = "保存した!";
+                saveButton.onclick = () => {};
+            };
         }
 
         createDetailedResult();
 
         inputManager.removeVirtualInputs();
-
-        const saveButton = qs("#result .saveReplayButton");
-        saveButton.innerText = "保存!";
-        saveButton.onclick = () => {
-            Replay.saveLastOne();
-            Replay.setupSavedReplayPage();
-            saveButton.innerText = "保存した!";
-            saveButton.onclick = () => {};
-        };
 
         await sleep(1000);
         if (replay) {
