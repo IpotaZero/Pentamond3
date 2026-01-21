@@ -1,6 +1,5 @@
 import { BlockKind } from "../BlockOperate/Block";
 import { AutoKeyboardInputData, AutoKeyboardManager } from "../Interaction/AutoKeyboardManager";
-import { game, gameStart, players, playSetting, PlaySetting, replay, set } from "../Run";
 import * as Setting from "../Settings";
 import { qs, qsAll, sleep } from "../Utils";
 import { GamePlayer } from "../Game/GamePlayer";
@@ -10,6 +9,7 @@ import { ReplayEvents } from "./ReplayEvents";
 import { ReplayDom } from "./ReplayDom";
 import { ReplayDataHandler } from "./ReplayDataHandler";
 import { pageManager } from "../PageManager";
+import { PlaySetting } from "../Run";
 
 //リプレイ
 export type ReplayData = {
@@ -54,7 +54,7 @@ export class Replay {
         ReplayEvents.setupSavedReplayPage(replayDataList, buttons);
     }
 
-    static addTempData(players: GamePlayer[], game: GameMode) {
+    static addTempData(players: GamePlayer[], game: GameMode, playSetting: PlaySetting) {
         const replayData = ReplayDataHandler.createReplayData(players, game, playSetting);
 
         ReplayDataHandler.addTempData(replayData, Setting.maximumTemporaryReplaySavable);

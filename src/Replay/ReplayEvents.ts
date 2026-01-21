@@ -1,19 +1,20 @@
 import { Input } from "../Interaction/Input";
 import { AutoKeyboardManager } from "../Interaction/AutoKeyboardManager";
 import { pageManager } from "../PageManager";
-import { set, gameStart } from "../Run";
 import { qs, sleep, qsAll } from "../Utils";
 import { Replay, ReplayData } from "./Replay";
 import { ReplayDataHandler } from "./ReplayDataHandler";
 import { inputManager } from "../Interaction/InputManager";
+import { Game } from "../Game";
 
 export class ReplayEvents {
     static startReplay(data: ReplayData) {
         const readingReplayData = data;
         const playSetting = window.structuredClone(readingReplayData.playSetting);
-        const replay = true;
 
-        set({ playSetting, replay, readingReplayData });
+        Game.playSetting = playSetting;
+        Game.replay = true;
+        Game.readingReplayData = readingReplayData;
 
         inputManager.removeVirtualInputs();
         inputManager.resetRegister();
@@ -28,7 +29,7 @@ export class ReplayEvents {
             inputManager.register(input);
         });
 
-        gameStart();
+        Game.start();
     }
 
     static setupTempReplayPage(tempDataList: ReplayData[], { replayButton, saveButton }: { replayButton: HTMLButtonElement; saveButton: HTMLButtonElement }) {

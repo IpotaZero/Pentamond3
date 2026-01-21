@@ -5,7 +5,7 @@ import { inputManager } from "./Interaction/InputManager";
 import { pageManager } from "./PageManager";
 import { sleep, qs, qsAll, getMinElement, removeMousePointerTemporary, qsAddEvent } from "./Utils";
 import * as Setting from "./Settings";
-import { game, players, replay } from "./Run";
+import { Game } from "./Game";
 
 //画面のinputによる操作
 const pageOperateEvents: EventId[] = [];
@@ -82,8 +82,8 @@ function addPageOperateEvent(id: string, input: Input) {
             if (["KeyP", ...Setting.gamepadConfigPresets[0].pause].includes(latestKey)) {
                 focusFlag = true;
                 operateWithInput();
-                if (replay && (players![0] as GamePlayer).loop.g$isLooping) {
-                    game!.stop();
+                if (Game.replay && (Game.players![0] as GamePlayer).loop.g$isLooping) {
+                    Game.game!.stop();
                     pageManager.setPage("replayPause");
                 }
             }
