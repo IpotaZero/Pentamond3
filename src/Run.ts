@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // se = [new Sound({ src: "assets/sounds/決定ボタンを押す32.mp3" }), new Sound({ src: "assets/sounds/カーソル移動9.mp3" }), new Sound({ src: "assets/sounds/正解のときの音.mp3" })];
     inputManager.s$maxInputNumber = 1;
     Replay.setupSavedReplayPage();
-    console.log(`The sum of size of replayData is ${new Blob([localStorage.getItem("Pentamond3-replayData") ?? "[]"]).size}byte`);
+    console.log(`The sum of size of replayData is ${Replay.getDataSize()}byte`);
 });
 
 const modeClass = [Mode1, Mode2];
@@ -74,7 +74,7 @@ export let players: GamePlayer[] | null;
 const debug = false;
 export let replay = false;
 
-let readingReplayData: ReplayData | null = null as ReplayData | null;
+let readingReplayData: ReplayData | null = null;
 
 export function set(option: { playSetting?: PlaySetting; replay?: boolean; readingReplayData?: ReplayData }) {
     playSetting = option.playSetting ?? playSetting;
@@ -137,15 +137,18 @@ export function gameStart() {
                 }
             });
         } else {
-            Replay.addReplayData(players!, game!);
+            Replay.addTempData(players!, game!);
 
             const saveButton = qs("#result .saveReplayButton");
             saveButton.innerText = "保存!";
             saveButton.onclick = () => {
-                Replay.saveLastOne();
-                Replay.setupSavedReplayPage();
-                saveButton.innerText = "保存した!";
-                saveButton.onclick = () => {};
+                if (Replay.saveLastOne()) {
+                    Replay.setupSavedReplayPage();
+                    saveButton.innerText = "保存した!";
+                    saveButton.onclick = () => {};
+                } else {
+                    alert("save失敗!");
+                }
             };
         }
 

@@ -69,7 +69,7 @@ export class ReplayDom {
         return { deleteButtons, replayButtons };
     }
 
-    static createReplayButton(date: number) {
+    static createTempReplayButton(date: number) {
         const now = new Date(date);
 
         const replayButton = document.createElement("button");

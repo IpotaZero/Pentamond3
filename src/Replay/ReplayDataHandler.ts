@@ -1,12 +1,26 @@
-import { replayDataDecryption, replayDataEncryption } from "./DataCompression";
 import { GameMode, OperateName } from "../Game/GameMode";
 import { GamePlayer } from "../Game/GamePlayer";
-import { pageManager } from "../PageManager";
 import { PlaySetting } from "../Run";
 import { ReplayData } from "./Replay";
 
+import { qs } from "../Utils";
+import { replayDataDecryption, replayDataEncryption } from "./DataCompression";
+
 export class ReplayDataHandler {
-    static temporaryReplayData: ReplayData[] = [];
+    static tempDataList: ReplayData[] = [];
+
+    static addTempData(data: ReplayData, max: number) {
+        this.tempDataList.push(data);
+
+        while (this.tempDataList.length > max) {
+            this.tempDataList.shift();
+            qs("#replay .replayButtonContainer:first-child").remove();
+        }
+    }
+
+    static getDataSize() {
+        return new Blob([localStorage.getItem("Pentamond3-replayData") ?? "[]"]).size;
+    }
 
     static createReplayData(players: GamePlayer[], game: GameMode, playSetting: PlaySetting) {
         const convertOperateName = (operateName: OperateName) => {
@@ -39,8 +53,8 @@ export class ReplayDataHandler {
 
         const replayData = structuredClone({
             inputData,
-            playSetting,
             nextData,
+            playSetting,
             finishTime,
             finishPlayers,
             nuisanceBlockData,
@@ -50,25 +64,24 @@ export class ReplayDataHandler {
         return replayData;
     }
 
-    static removeReplayData(data: ReplayData) {
-        const replayData = this.getReplayDataList();
-
-        const json = JSON.stringify(replayData.filter((value) => value.date != data.date).map((d) => replayDataEncryption(d)));
+    static removeSavedReplayData(data: ReplayData) {
+        const replayDataList = this.getReplayDataList();
+        const removedList = replayDataList.filter((value) => value.date != data.date);
+        const encodedList = removedList.map((d) => replayDataEncryption(d));
+        const json = JSON.stringify(encodedList);
 
         localStorage.setItem("Pentamond3-replayData", json);
     }
 
     static getReplayDataList(): ReplayData[] {
         const json = localStorage.getItem("Pentamond3-replayData");
-
-        const encodedDataList: string[] = json ? JSON.parse(json) : [];
-
-        const replayData = encodedDataList.map((encodedData) => replayDataDecryption(encodedData));
+        const encodedList: string[] = json ? JSON.parse(json) : [];
+        const replayData = encodedList.map((encodedData) => replayDataDecryption(encodedData));
 
         return replayData;
     }
 
-    static saveReplayData(data: ReplayData) {
+    static saveReplayData(data: ReplayData, { onOverMax, onError }: { onOverMax: () => void; onError: () => void }): boolean {
         const replayDataList = ReplayDataHandler.getReplayDataList();
 
         // 同じデータを保存しない
@@ -77,8 +90,8 @@ export class ReplayDataHandler {
         }
 
         // 11件以上保存しない
-        if (replayDataList.length == 10) {
-            pageManager.setPage("replaySaveAlert");
+        if (replayDataList.length >= 10) {
+            onOverMax();
             return false;
         }
 
@@ -87,7 +100,7 @@ export class ReplayDataHandler {
         replayDataList.sort((a, b) => a.date - b.date);
 
         // 11件以上になったら古いものから消していく
-        if (replayDataList.length == 11) {
+        while (replayDataList.length >= 11) {
             replayDataList.shift();
         }
 
@@ -105,11 +118,11 @@ export class ReplayDataHandler {
         try {
             localStorage.setItem("Pentamond3-replayData", JSON.stringify(encodedList));
         } catch (error) {
-            pageManager.setPage("replaySaveAlert2");
+            onError();
             return false;
         }
 
-        const dataSize = new Blob([localStorage.getItem("Pentamond3-replayData") ?? "[]"]).size;
+        const dataSize = this.getDataSize();
         console.log(`The sum of size of replayData is ${dataSize}byte`);
         return true;
     }
