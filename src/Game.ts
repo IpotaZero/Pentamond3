@@ -9,10 +9,18 @@ import { playBackground } from "./PlayBackground";
 import { Replay, ReplayData } from "./Replay/Replay";
 import { qs, qsAll, sleep } from "./Utils";
 
+//ゲーム開始
+export type PlaySetting = {
+    playerNumber: number;
+    mode: number;
+    maxGameTime: number;
+    handy: number[];
+};
+
 export class Game {
     private static readonly ModeClassList = [Mode1, Mode2];
 
-    static playSetting = {
+    static playSetting: PlaySetting = {
         playerNumber: 1,
         mode: 1,
         maxGameTime: 50,

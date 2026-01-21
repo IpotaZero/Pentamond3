@@ -9,14 +9,6 @@ import { Replay } from "./Replay/Replay";
 import { Game } from "./Game";
 import { GraphicSetting } from "./GraphicSetting";
 
-//ゲーム開始
-export type PlaySetting = {
-    playerNumber: number;
-    mode: number;
-    maxGameTime: number;
-    handy: number[];
-};
-
 //不正なページ遷移の防止
 document.addEventListener("keydown", (e) => {
     if (e.code == "Tab" || e.code == "Space" || e.code == "Enter") {

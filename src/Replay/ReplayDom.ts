@@ -99,14 +99,19 @@ export class ReplayDom {
 
         qs("#replay .options").prepend(replayContainer);
 
+        let tempDataListLength = 0;
+
         //座標の割り振り直し
         qsAll("#replay .replayButton").forEach((button, i) => {
             button.dataset.mapping = `[0,${i}]`;
+            tempDataListLength++;
         });
 
         qsAll("#replay .replaySaveButton").forEach((button, i) => {
             button.dataset.mapping = `[1,${i}]`;
         });
+
+        qs("#replay .back").dataset.mapping = `[0,${tempDataListLength}]`;
 
         return { replayButton, saveButton };
     }

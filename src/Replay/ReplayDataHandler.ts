@@ -1,10 +1,10 @@
 import { GameMode, OperateName } from "../Game/GameMode";
 import { GamePlayer } from "../Game/GamePlayer";
-import { PlaySetting } from "../Run";
 import { ReplayData } from "./Replay";
 
 import { qs } from "../Utils";
 import { replayDataDecryption, replayDataEncryption } from "./DataCompression";
+import { PlaySetting } from "../Game";
 
 export class ReplayDataHandler {
     static tempDataList: ReplayData[] = [];
