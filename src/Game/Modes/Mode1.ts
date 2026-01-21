@@ -2,10 +2,11 @@ import { EventManager } from "../../EventManager";
 import { gameEvents, GameMode } from "../GameMode";
 import { GamePlayer } from "../GamePlayer";
 import { pageManager } from "../../PageManager";
-import { gamepadConfigs, graphicSetting } from "../../Run";
+import { gamepadConfigs } from "../../Run";
 import * as Setting from "../../Settings";
 import { qsAll, removeMousePointerTemporary } from "../../Utils";
 import { playBackground } from "../../PlayBackground";
+import { GraphicSetting } from "../../GraphicSetting";
 
 export class Mode1 extends GameMode {
     constructor(players: GamePlayer[]) {
@@ -19,7 +20,7 @@ export class Mode1 extends GameMode {
         this.players.forEach((player) => {
             player.start();
         });
-        if (graphicSetting.playBackground) {
+        if (GraphicSetting.playBackground) {
             playBackground.start();
         }
     }
@@ -27,7 +28,7 @@ export class Mode1 extends GameMode {
         this.players.forEach((player) => {
             player.stop();
         });
-        if (graphicSetting.playBackground) {
+        if (GraphicSetting.playBackground) {
             playBackground.stop();
         }
     }
@@ -263,14 +264,14 @@ export class Mode1 extends GameMode {
                     p.playInfo.recovery += lastTrick.time;
                     p.playInfo.chain += 1;
                     p.playInfo.trickCount += 1;
-                    if (graphicSetting.removeShake) {
+                    if (GraphicSetting.removeShake) {
                         p.animations.removeLineWithTrick.play();
                     }
                 } else {
                     p.playInfo.penalty += p.playInfo.penaltyTask;
                     p.playInfo.penaltyTask = Setting.penalty.removeLine;
                     p.playInfo.chain = 0;
-                    if (graphicSetting.removeShake) {
+                    if (GraphicSetting.removeShake) {
                         p.animations.removeLineWithoutTrick.play();
                     }
                 }

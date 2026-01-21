@@ -7,6 +7,7 @@ import * as Setting from "./Settings";
 import "./ScreenInteraction";
 import { Replay } from "./Replay/Replay";
 import { Game } from "./Game";
+import { GraphicSetting } from "./GraphicSetting";
 
 //ゲーム開始
 export type PlaySetting = {
@@ -153,86 +154,7 @@ qsAddEvent(".replayStart", "click", () => {
 
 // localStorage.removeItem("Pentamond3-replayData");
 
-//グラフィック設定
-export let graphicSetting = {
-    putShake: true,
-    removeShake: true,
-    playBackground: true,
-};
-
-if (localStorage.getItem("Pentamond3-graphicSetting")) {
-    const data = Number.parseInt(localStorage.getItem("Pentamond3-graphicSetting")!, 10)
-        .toString(2)
-        .split("")
-        .map((word) => (word == "0" ? false : true));
-    for (let i = 0; 3 - data.length; i++) {
-        data.unshift(false);
-    }
-    graphicSetting.putShake = data[0];
-    graphicSetting.removeShake = data[1];
-    graphicSetting.playBackground = data[2];
-    qs("#putShake" + (data[0] ? "On" : "Off")).style.color = "#ee8888";
-    qs("#removeShake" + (data[1] ? "On" : "Off")).style.color = "#ee8888";
-    qs("#playBackground" + (data[2] ? "On" : "Off")).style.color = "#ee8888";
-} else {
-    saveGraphicSetting();
-}
-
-function saveGraphicSetting() {
-    const data = Number.parseInt([graphicSetting.putShake ? "1" : "0", graphicSetting.removeShake ? "1" : "0", graphicSetting.playBackground ? "1" : "0"].join(""), 2) + "";
-    try {
-        localStorage.setItem("Pentamond3-graphicSetting", data);
-    } catch (error) {
-        console.error("何らかの理由により設定の保存に失敗しました");
-    }
-    qs("#putShakeOn").style.color = graphicSetting.putShake ? "#ee8888" : "";
-    qs("#putShakeOff").style.color = graphicSetting.putShake ? "" : "#ee8888";
-    qs("#removeShakeOn").style.color = graphicSetting.removeShake ? "#ee8888" : "";
-    qs("#removeShakeOff").style.color = graphicSetting.removeShake ? "" : "#ee8888";
-    qs("#playBackgroundOn").style.color = graphicSetting.playBackground ? "#ee8888" : "";
-    qs("#playBackgroundOff").style.color = graphicSetting.playBackground ? "" : "#ee8888";
-}
-
-qsAddEvent("#putShakeOn", "click", () => {
-    if (graphicSetting.putShake) {
-        return;
-    }
-    graphicSetting.putShake = true;
-});
-qsAddEvent("#putShakeOff", "click", () => {
-    if (!graphicSetting.putShake) {
-        return;
-    }
-    graphicSetting.putShake = false;
-});
-qsAddEvent("#removeShakeOn", "click", () => {
-    if (graphicSetting.removeShake) {
-        return;
-    }
-    graphicSetting.removeShake = true;
-});
-qsAddEvent("#removeShakeOff", "click", () => {
-    if (!graphicSetting.removeShake) {
-        return;
-    }
-    graphicSetting.removeShake = false;
-});
-qsAddEvent("#playBackgroundOn", "click", () => {
-    if (graphicSetting.playBackground) {
-        return;
-    }
-    graphicSetting.playBackground = true;
-});
-qsAddEvent("#playBackgroundOff", "click", () => {
-    if (!graphicSetting.playBackground) {
-        return;
-    }
-    graphicSetting.playBackground = false;
-});
-
-qsAddEvent("#graphicSetting button", "click", () => {
-    saveGraphicSetting();
-});
+GraphicSetting.init();
 
 pageManager.addEvent(["setPage-dataSetting"], () => {
     const dataSize = new Blob([localStorage.getItem("Pentamond3-replayData") ?? "", localStorage.getItem("Pentamond3-graphicSetting") ?? ""]).size;

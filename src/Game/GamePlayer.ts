@@ -8,7 +8,7 @@ import { TrickInfo } from "../Trick";
 import * as Setting from "../Settings";
 import { gameEvents } from "./GameMode";
 import { inputManager } from "../Interaction/InputManager";
-import { graphicSetting } from "../Run";
+import { GraphicSetting } from "../GraphicSetting";
 
 export class GamePlayer {
     operator: MondOperator = new MondOperator();
@@ -240,7 +240,7 @@ export class GamePlayer {
                 this.canvas.paintPlayCanvas();
             }),
             this.operator.addEvent(["put"], () => {
-                if (graphicSetting.putShake) {
+                if (GraphicSetting.putShake) {
                     this.animations.put.play();
                 }
             })
