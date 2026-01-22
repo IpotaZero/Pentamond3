@@ -32,11 +32,18 @@ export class ReplayDom {
             element.classList.add("replayButtonContainer");
             element.appendChild(replayButtons[i]);
 
-            const time = document.createElement("span");
+            const time = document.createElement("div");
             time.classList.add("replayDataDescription");
-            time.style.fontSize = "0.5em";
-            time.style.width = "40%";
-            time.innerHTML = `Mode: ${replayDataList[i].playSetting.mode}<br>Time: ${replayDataList[i].finishTime / 1000}s`;
+            time.innerHTML = `${replayDataList[i].nextData.length == 1 ? "ソロ" : "マルチ"} : ${(() => {
+                switch (replayDataList[i].playSetting.mode) {
+                    case 1:
+                        return "サバイバル";
+                    case 2:
+                        return "十五列揃え";
+                    default:
+                        return "不明なモード";
+                }
+            })()}<br>時間: ${(replayDataList[i].finishTime / 1000).toFixed(2)}`;
             element.appendChild(time);
 
             element.appendChild(deleteButtons[i]);

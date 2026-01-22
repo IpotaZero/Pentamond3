@@ -103,7 +103,10 @@ button {
         border-radius: 1vh;
         background-color: #e803;
         box-shadow: #e805 0 0 1.5vh;
-        transition: scale 200ms ease-in-out, background-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
+        transition:
+            scale 200ms ease-in-out,
+            background-color 150ms ease-in-out,
+            box-shadow 150ms ease-in-out;
         scale: 1.2;
     }
 }
@@ -553,9 +556,14 @@ button {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5vh;
+            gap: 3vh;
             & .replayButton {
                 font-size: 5vh;
+                margin-left: -10vh;
+            }
+            & .replayDataDescription {
+                font-size: 3vh;
+                width: 25vh;
             }
             & .replayDeleteButton {
                 height: 7vh;

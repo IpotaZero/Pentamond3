@@ -6,7 +6,7 @@ import { inputManager } from "./Interaction/InputManager";
 import * as Setting from "./Settings";
 import "./ScreenInteraction";
 import { Replay } from "./Replay/Replay";
-import { Game } from "./Game";
+import { GameProcessing } from "./GameProcessing";
 import { GraphicSetting } from "./GraphicSetting";
 import { soundsInit } from "./SoundProcessing";
 import { LoopManager } from "./LoopManager";
@@ -53,18 +53,18 @@ const debug = false;
 
 qsAddEvent(".playStart", "click", () => {
     pageManager.backLatestPage("playPrepare", { eventIgnore: true });
-    Game.start();
+    GameProcessing.start();
 });
 
 qsAddEvent("#resumeButton", "click", () => {
-    Game.game?.start();
+    GameProcessing.game?.start();
 });
 
 //コントローラー登録
 export let gamepadConfigs: Setting.GamepadConfig[] = [];
 
 pageManager.addEvent(["setPage-playerRegister"], () => {
-    Game.replay = false;
+    GameProcessing.replay = false;
     if (inputManager.g$registeredInputNumber) {
         inputManager.removeVirtualInputs();
         inputManager.resetRegister();
@@ -72,9 +72,9 @@ pageManager.addEvent(["setPage-playerRegister"], () => {
     Array.from(qs("#connectionLabel").children).forEach((element) => {
         element.remove();
     });
-    qs("#registerText").innerHTML = `登録したい入力機器のボタンを押してください：あと${Game.playSetting.playerNumber - inputManager.g$registeredInputNumber}人`;
+    qs("#registerText").innerHTML = `登録したい入力機器のボタンを押してください：あと${GameProcessing.playSetting.playerNumber - inputManager.g$registeredInputNumber}人`;
     gamepadConfigs = [];
-    inputManager.s$maxInputNumber = Game.playSetting.playerNumber;
+    inputManager.s$maxInputNumber = GameProcessing.playSetting.playerNumber;
     inputManager.startRegister();
 });
 
@@ -94,7 +94,7 @@ inputManager.addEvent(["inputRegistered"], () => {
     typeIcon.classList.add("inputTypeIcon");
     qs("#connectionLabel").appendChild(typeIcon);
     gamepadConfigs.push(Setting.gamepadConfigPresets[0]);
-    qs("#registerText").innerHTML = `登録したい入力機器のボタンを押してください：あと${Game.playSetting.playerNumber - inputManager.g$registeredInputNumber}人`;
+    qs("#registerText").innerHTML = `登録したい入力機器のボタンを押してください：あと${GameProcessing.playSetting.playerNumber - inputManager.g$registeredInputNumber}人`;
 });
 
 inputManager.addEvent(["finishRegister"], () => {
@@ -114,7 +114,7 @@ qsAddEvent("#registerButton", "click", async () => {
         (element as HTMLButtonElement).disabled = true;
     });
     await sleep(500);
-    pageManager.backPages(Game.playSetting.playerNumber == 1 ? 1 : 2, { eventIgnore: true });
+    pageManager.backPages(GameProcessing.playSetting.playerNumber == 1 ? 1 : 2, { eventIgnore: true });
     pageManager.setPage("playPrepare");
     qsAll("#playerRegister button").forEach((element) => {
         (element as HTMLButtonElement).disabled = false;
@@ -124,11 +124,11 @@ qsAddEvent("#registerButton", "click", async () => {
 
 //モード読み込み
 qsAddEvent("button[data-mode]", "click", (element) => {
-    Game.playSetting.mode = +element.dataset.mode!;
+    GameProcessing.playSetting.mode = +element.dataset.mode!;
 });
 
 qsAddEvent("button[data-player]", "click", (element) => {
-    Game.playSetting.playerNumber = +element.dataset.player!;
+    GameProcessing.playSetting.playerNumber = +element.dataset.player!;
 });
 
 qsAddEvent("#replayPause button:not(#replayResumeButton)", "click", () => {
@@ -136,12 +136,12 @@ qsAddEvent("#replayPause button:not(#replayResumeButton)", "click", () => {
 });
 
 qsAddEvent("#replayResumeButton", "click", () => {
-    Game.game?.start();
+    GameProcessing.game?.start();
 });
 
 qsAddEvent(".replayStart", "click", () => {
     pageManager.backLatestPage("replay", { eventIgnore: true });
-    Replay.startReplay(Game.readingReplayData!);
+    Replay.startReplay(GameProcessing.readingReplayData!);
 });
 
 // localStorage.removeItem("Pentamond3-replayData");

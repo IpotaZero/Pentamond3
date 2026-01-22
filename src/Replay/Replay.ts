@@ -7,7 +7,7 @@ import { GameMode } from "../Game/GameMode";
 import { ReplayDom } from "./ReplayDom";
 import { ReplayDataHandler } from "./ReplayDataHandler";
 import { pageManager } from "../PageManager";
-import { Game, PlaySetting } from "../Game";
+import { GameProcessing, PlaySetting } from "../GameProcessing";
 import { Input } from "../Interaction/Input";
 import { inputManager } from "../Interaction/InputManager";
 import { ReplayEventSetter } from "./ReplayEventSetter";
@@ -44,9 +44,9 @@ export class Replay {
         const readingReplayData = data;
         const playSetting = window.structuredClone(readingReplayData.playSetting);
 
-        Game.playSetting = playSetting;
-        Game.replay = true;
-        Game.readingReplayData = readingReplayData;
+        GameProcessing.playSetting = playSetting;
+        GameProcessing.replay = true;
+        GameProcessing.readingReplayData = readingReplayData;
 
         inputManager.removeVirtualInputs();
         inputManager.resetRegister();
@@ -61,7 +61,7 @@ export class Replay {
             inputManager.register(input);
         });
 
-        Game.start();
+        GameProcessing.start();
     }
 
     static setupSavedReplayPage() {

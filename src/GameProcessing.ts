@@ -17,7 +17,7 @@ export type PlaySetting = {
     handy: number[];
 };
 
-export class Game {
+export class GameProcessing {
     private static readonly ModeClassList = [Mode1, Mode2];
 
     static playSetting: PlaySetting = {
@@ -91,14 +91,12 @@ export class Game {
                 Replay.addTempData(this.players!, this.game!, this.playSetting);
 
                 const saveButton = qs("#result .saveReplayButton");
-                saveButton.innerText = "保存!";
+                saveButton.innerText = "リプレイを保存する";
                 saveButton.onclick = () => {
                     if (Replay.saveLastOne()) {
                         Replay.setupSavedReplayPage();
-                        saveButton.innerText = "保存した!";
+                        saveButton.innerText = "保存しました";
                         saveButton.onclick = () => {};
-                    } else {
-                        alert("save失敗!");
                     }
                 };
             }
@@ -153,7 +151,7 @@ export class Game {
 
     //詳細結果の中身を作成する
     static createDetailedResult() {
-        if (!Game.players) {
+        if (!GameProcessing.players) {
             return;
         }
         qsAll("#detailedResult .subPage").forEach((subPage) => {
@@ -166,12 +164,12 @@ export class Game {
         text.classList.add("text");
         subPage.appendChild(text);
         text.innerHTML =
-            `Player人数 : ${Game.players.length}<br />` +
-            `モード : ${Game.playSetting.mode == 1 ? "サバイバル" : "十五列揃え"}<br />` +
-            (Game.players.length != 1 ? `勝者 : ${qs(".resultLabel").innerHTML}<br />` : "");
+            `Player人数 : ${GameProcessing.players.length}<br />` +
+            `モード : ${GameProcessing.playSetting.mode == 1 ? "サバイバル" : "十五列揃え"}<br />` +
+            (GameProcessing.players.length != 1 ? `勝者 : ${qs(".resultLabel").innerHTML}<br />` : "");
         subPageController.before(subPage);
 
-        Game.players.forEach((p, i) => {
+        GameProcessing.players.forEach((p, i) => {
             const subPage = document.createElement("div");
             subPage.classList.add("subPage");
             const text = document.createElement("div");
@@ -186,8 +184,8 @@ export class Game {
 
             text.innerHTML =
                 `Player : ${i + 1}<br />` +
-                ([1].includes(Game.playSetting.mode) ? `開始Time : ${p.playInfo.maxGameTime}<br />` : "") +
-                ([1].includes(Game.playSetting.mode) ? `残りTime : ${p.playInfo.gameTime}<br />` : "") +
+                ([1].includes(GameProcessing.playSetting.mode) ? `開始Time : ${p.playInfo.maxGameTime}<br />` : "") +
+                ([1].includes(GameProcessing.playSetting.mode) ? `残りTime : ${p.playInfo.gameTime}<br />` : "") +
                 `プレイ時間 : ${(p.playInfo.playTime / 1000).toFixed(2)}<br />` +
                 `役の回数 : ${p.playInfo.trickCount}<br />` +
                 `一列揃え : ${p.playInfo.line}<br />` +
