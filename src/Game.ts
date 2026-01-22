@@ -23,7 +23,7 @@ export class Game {
     static playSetting: PlaySetting = {
         playerNumber: 1,
         mode: 1,
-        maxGameTime: 50,
+        maxGameTime: 300,
         handy: [1],
     };
 
