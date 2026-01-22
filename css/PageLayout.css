@@ -222,9 +222,14 @@ button {
             cursor: pointer;
             border: none;
         }
-        &:focus {
-            outline: none;
-        }
+    }
+    &:active {
+        scale: 1;
+        filter: brightness(0.8);
+        transition: scale 100ms ease-out;
+    }
+    &:focus {
+        scale: 1;
     }
 }
 
@@ -257,6 +262,10 @@ button {
             height: 100%;
             width: 35%;
             margin-left: -1cqh;
+            display: flex;
+            flex-direction: column;
+            justify-content: start;
+            gap: 2vh;
             & .informationLabel {
                 font-family: "RocknRoll One", Arial;
                 color: #2ac;
@@ -662,3 +671,7 @@ button {
         margin-right: 45vh;
     }
 }
+
+/* *{
+  background-image: url("../assets/sounds/通常ボタン.m4a");  
+} */

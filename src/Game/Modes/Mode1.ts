@@ -6,6 +6,7 @@ import { gamepadConfigs, graphicSetting } from "../../Run";
 import * as Setting from "../../Settings";
 import { qsAll, removeMousePointerTemporary } from "../../Utils";
 import { playBackground } from "../../PlayBackground";
+import { se } from "../../SoundProcessing";
 
 export class Mode1 extends GameMode {
     constructor(players: GamePlayer[]) {
@@ -236,6 +237,7 @@ export class Mode1 extends GameMode {
                     p.damageInfo.totalAttack += p.damageInfo.attackTask;
                     p.damageInfo.attackTask = 0;
                 }
+                se[2].play();
             }),
 
             p.operator.addEvent(["unput"], () => {

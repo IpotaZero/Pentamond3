@@ -175,12 +175,12 @@ export class GamePlayer {
                     rotate: "0deg",
                 },
                 {
-                    transform: "translate(-0.1vh, 0)",
-                    rotate: "-0.3deg",
+                    transform: "translate(-0.08vh, 0)",
+                    rotate: "-0.2deg",
                 },
                 {
-                    transform: "translate(0.1vh, 0)",
-                    rotate: "0.3deg",
+                    transform: "translate(0.08vh, 0)",
+                    rotate: "0.2deg",
                 },
                 {
                     rotate: "0deg",

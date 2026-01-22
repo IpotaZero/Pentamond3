@@ -1,13 +1,14 @@
 import { LoopManager } from "./LoopManager";
 import { qs } from "./Utils";
+import { Vector } from "./Vector";
 
 const element = qs("#playBackground");
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d")!;
 
 element.appendChild(canvas);
-canvas.width = qs("body").clientWidth;
-canvas.height = qs("body").clientHeight;
+canvas.width = 14 * 40;
+canvas.height = 9 * 40;
 
 class Triangle {
     x: number = 0;
@@ -23,12 +24,12 @@ class Triangle {
 
     reset() {
         this.x = Math.random() * canvas.width;
-        this.y = canvas.height + 50;
+        this.y = canvas.height + 20;
         this.size = 20 + Math.random() ** 1.2 * 40;
-        this.speed = 0.6 + Math.random() * 1.6;
+        this.speed = 0.6 + Math.random() * 1.5;
         this.opacity = 0.2 + Math.random() * 0.5;
         this.angle = Math.random() * Math.PI * 2;
-        this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.04;
     }
 
     update() {
@@ -40,20 +41,16 @@ class Triangle {
     }
 
     draw(ctx: CanvasRenderingContext2D) {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.angle);
-
+        const point = new Vector(this.x, this.y);
+        const vertex = new Vector(0, (-this.size / 2) * (Math.sqrt(3) / 2)).rot(this.angle);
         ctx.beginPath();
-        ctx.moveTo(0, (-this.size / 2) * (Math.sqrt(3) / 2));
-        ctx.lineTo(-this.size / 2, (this.size / 2) * (Math.sqrt(3) / 2));
-        ctx.lineTo(this.size / 2, (this.size / 2) * (Math.sqrt(3) / 2));
+        ctx.moveTo(...(vertex.rot(0).add(point).array as [number, number]));
+        ctx.lineTo(...(vertex.rot((2 * Math.PI) / 3).add(point).array as [number, number]));
+        ctx.lineTo(...(vertex.rot((4 * Math.PI) / 3).add(point).array as [number, number]));
         ctx.closePath();
 
         ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
         ctx.fill();
-
-        ctx.restore();
     }
 }
 
@@ -82,7 +79,7 @@ const colorAnimation = element.animate(
     }
 );
 
-const triangles = Array.from({ length: 50 }, () => new Triangle());
+const triangles = Array.from({ length: 40 }, () => new Triangle());
 const playBackgroundLoop = new LoopManager();
 playBackgroundLoop.addEvent(["loop"], () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -112,9 +109,3 @@ export const playBackground = {
         colorAnimation.pause();
     },
 };
-
-// ウィンドウサイズ変更対応
-window.addEventListener("resize", () => {
-    canvas.width = qs("body").clientWidth;
-    canvas.height = qs("body").clientHeight;
-});

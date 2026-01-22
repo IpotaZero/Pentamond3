@@ -15,10 +15,12 @@ import { AutoKeyboardInputData, AutoKeyboardManager } from "./Interaction/AutoKe
 import { BlockKind } from "./BlockOperate/Block";
 import { replayDataDecryption, replayDataEncryption, sum } from "./DataCompression";
 import "./ScreenInteraction";
+import { soundsInit } from "./SoundProcessing";
+import { LoopManager } from "./LoopManager";
 
 //不正なページ遷移の防止
 document.addEventListener("keydown", (e) => {
-    if (e.code == "Tab" || e.code == "Space" || e.code == "Enter") {
+    if (["Tab", "Space", "Enter", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) {
         e.preventDefault();
     }
 });
@@ -43,9 +45,7 @@ qsAddEvent("#pageStart", "click", () => {
 export let se: Sound[] = [];
 document.addEventListener("DOMContentLoaded", async () => {
     pageManager.init();
-    BGM.init();
-    Sound.init();
-    // se = [new Sound({ src: "assets/sounds/決定ボタンを押す32.mp3" }), new Sound({ src: "assets/sounds/カーソル移動9.mp3" }), new Sound({ src: "assets/sounds/正解のときの音.mp3" })];
+    soundsInit();
     inputManager.s$maxInputNumber = 1;
     readSavedReplayData();
     console.log(`The sum of size of replayData is ${new Blob([localStorage.getItem("Pentamond3-replayData") ?? "[]"]).size}byte`);
@@ -694,6 +694,28 @@ pageManager.addEvent(["setPage-allDataDeleteAlert"], () => {
 
 qsAddEvent("#allDataDeleteConfirmButton", "click", () => {
     removeAllData();
-    pageManager.backPages(2);
+    pageManager.backPages(2, { eventIgnore: true });
     pageManager.setPage("dataSetting");
 });
+
+// let count = 0;
+// const loop = new LoopManager();
+// const loop2 = new LoopManager();
+// loop.s$loopFrequency = 1000;
+// loop.addEvent(["loop"], () => {
+//     console.log(count);
+//     count = 0;
+// });
+// loop2.addEvent(["loop"], () => {
+//     count++;
+// });
+// loop.start();
+// loop2.start();
+
+// let a = performance.now();
+// const A = (currentTime: number) => {
+//     console.log((1000 / (currentTime - a)).toFixed(0));
+//     a = currentTime;
+//     requestAnimationFrame(A);
+// };
+// requestAnimationFrame(A);

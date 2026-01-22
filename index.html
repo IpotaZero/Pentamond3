@@ -226,6 +226,19 @@
             <button class="back" data-mapping="[0,1]">戻る</button>
         </div>
 
+        <div class="page" id="tutorial">
+            <div class="label headingLabel">養成所</div>
+            <div class="text">ステージ形式でPentamondの遊び方を覚えよう！</div>
+            <div class="text">教習項目を選んでね！</div>
+            <div class="options" data-direction="row">
+                <button data-mapping="[1,0]" data-page="operateTutorial">操作方法</button>
+                <button data-mapping="[2,0]" data-page="BasicRule">基本ルール</button>
+                <button data-mapping="[3,0]" data-page="advancedRule">応用など</button>
+                <button data-mapping="[4,0]" data-page="trickTutorial">役の揃え方</button>
+            </div>
+            <button class="back" data-mapping="[0,1]">戻る</button>
+        </div>
+
         <div class="page" id="help">
             <div class="label headingLabel">ヘルプ</div>
             <div class="options">
@@ -419,42 +432,42 @@
 
         <div class="page" id="musicSetting">
             <div class="label headingLabel">音楽設定</div>
-            <div class="options" data-direction="row">
+            <div class="selectWithDescription">
+                <div class="selectWithDescriptionOptions">
+                    <button data-page="volumeSetting" data-mapping="[0,0]">音量設定</button>
+                    <button data-page="bgmSetting" data-mapping="[0,1]">BGM設定</button>
+                    <button data-page="soundTest" data-mapping="[0,2]">サウンドテスト</button>
+                </div>
+                <div class="selectOptionDescriptions">
+                    <div>
+                        <div class="text">BGM・SE音量を変更できるよ！</div>
+                    </div>
+                    <div>
+                        <div class="text">プレイ中に流れるBGMを変更できるよ！</div>
+                    </div>
+                    <div>
+                        <div class="text">Pentamondで使用されているBGMたちを聴けるよ！</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="back" data-mapping="[0,3]">戻る</button>
+        </div>
+
+        <div class="page" id="volumeSetting">
+            <div class="label headingLabel">音量設定</div>
+            <div class="options">
                 <div class="rangeContainer" data-mapping="[0,0]">
                     <label for="bgmVolume">BGM:</label>
                     <input type="range" id="bgmVolume" min="0" max="10" value="10" />
                 </div>
-                <div class="rangeContainer" data-mapping="[1,0]">
+                <div class="rangeContainer" data-mapping="[0,1]">
                     <label for="seVolume">SE:</label>
                     <input type="range" id="seVolume" min="0" max="10" value="10" />
                 </div>
             </div>
-            <div class="options" data-direction="row">
-                <div class="selectorPanel" data-mapping="[0,1]">
-                    <div class="label">ソロ</div>
-                    <select class="selector">
-                        <option value="0">なし</option>
-                        <option value="1" selected>ならべてトライアングル</option>
-                        <option value="2">さよならさんかく</option>
-                        <option value="3">つみきのおしろ</option>
-                        <option value="4">Top of the Pyramid</option>
-                        <option value="5">おかたづけ</option>
-                    </select>
-                </div>
-                <div class="selectorPanel" data-mapping="[1,1]">
-                    <div class="label">マルチ</div>
-                    <select class="selector">
-                        <option value="0">なし</option>
-                        <option value="1">ならべてトライアングル</option>
-                        <option value="2">さよならさんかく</option>
-                        <option value="3">つみきのおしろ</option>
-                        <option value="4" selected>Top of the Pyramid</option>
-                        <option value="5">おかたづけ</option>
-                    </select>
-                </div>
-            </div>
 
-            <button class="back" data-mapping="[0,5]">戻る</button>
+            <button class="back" data-mapping="[0,2]">戻る</button>
         </div>
 
         <div class="page" id="graphicSetting">
