@@ -49,9 +49,9 @@ export class ReplayDom {
             now.getSeconds() < 10 ? "0" + now.getSeconds() : now.getSeconds()
         }`;
 
-        const replayDataDescription = document.createElement("span");
+        const replayDataDescription = document.createElement("div");
         replayDataDescription.classList.add("replayDataDescription");
-        replayDataDescription.innerHTML = `Mode: ${replayData.playSetting.mode}<br>Time: ${replayData.finishTime / 1000}s`;
+        replayDataDescription.innerHTML = this.createReplayDataDescription(replayData);
 
         const deleteButton = document.createElement("button");
         deleteButton.classList.add("replayDeleteButton");
@@ -61,6 +61,25 @@ export class ReplayDom {
         replayDataContainer.appendChild(deleteButton);
 
         return { replayButton, deleteButton, replayDataContainer };
+    }
+
+    private static createReplayDataDescription(replayData: ReplayData) {
+        const solo = replayData.nextData.length == 1 ? "ソロ" : "マルチ";
+        const mode = this.stringifyMode(replayData.playSetting.mode);
+        const time = (replayData.finishTime / 1000).toFixed(2);
+
+        return `${solo} : ${mode}<br>時間: ${time}`;
+    }
+
+    private static stringifyMode(mode: number) {
+        switch (mode) {
+            case 1:
+                return "サバイバル";
+            case 2:
+                return "十五列揃え";
+            default:
+                return "不明なモード";
+        }
     }
 
     static createTempReplayButton(date: number) {
