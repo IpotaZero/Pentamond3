@@ -44,7 +44,7 @@ pageManager.addEvent(["pageChanged-title"], async () => {
         pageManager.s$valid = false;
         ScreenInteractionSetting.operable = false;
         await BGM.pause();
-        await BGM.fetch({ src: "/assets/musics/つみきのおしろ.m4a" });
+        await BGM.fetch({ src: "assets/musics/つみきのおしろ.m4a" });
         await BGM.play();
         bgm = 0;
         pageManager.s$valid = true;
@@ -57,7 +57,7 @@ pageManager.addEvent(["pageChanged-startEffect"], async () => {
         pageManager.s$valid = false;
         ScreenInteractionSetting.operable = false;
         await BGM.pause();
-        await BGM.fetch({ src: "/assets/musics/ならべてトライアングル.m4a" });
+        await BGM.fetch({ src: "assets/musics/ならべてトライアングル.m4a" });
         await BGM.play();
         bgm = 1;
         pageManager.s$valid = true;
