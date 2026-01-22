@@ -173,15 +173,23 @@ inputManager.addEvent(["inputAdded"], () => {
 });
 
 //マウス操作との整合
-qsAddEvent("[data-mapping]", "mouseover", (element) => {
-    element.focus();
-});
+qsAll("[data-mapping]")
+    .filter((e) => e instanceof HTMLElement)
+    .forEach((button) => {
+        setHoverHighlight(button);
+    });
 
-qsAddEvent("[data-mapping]", "mouseleave", (element) => {
-    if (document.activeElement == element) {
-        (element as HTMLElement).blur();
-    }
-});
+export function setHoverHighlight(button: HTMLElement) {
+    button.addEventListener("mouseover", () => {
+        button.focus();
+    });
+
+    button.addEventListener("mouseleave", () => {
+        if (document.activeElement == button) {
+            button.blur();
+        }
+    });
+}
 
 qsAddEvent("[data-mapping]", "click", () => {
     lastOperateTime = Date.now();

@@ -1,3 +1,4 @@
+import { setHoverHighlight } from "../ScreenInteraction";
 import { qs, qsAll } from "../Utils";
 import { ReplayData } from "./Replay";
 
@@ -8,51 +9,20 @@ export class ReplayDom {
             element.remove();
         });
 
-        const replayContainers = Array.from({ length: replayDataList.length }, () => document.createElement("div"));
+        const replayButtons: HTMLButtonElement[] = [];
+        const deleteButtons: HTMLButtonElement[] = [];
 
-        const replayButtons = Array.from({ length: replayDataList.length }, (_, i) => {
-            const now = new Date(replayDataList[i].date);
+        for (const replayData of replayDataList) {
+            const { replayDataContainer, replayButton, deleteButton } = this.createReplayDataContainer(replayData);
 
-            const replayButton = document.createElement("button");
-            replayButton.classList.add("replayButton");
-            replayButton.innerHTML = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${now.getMinutes() < 10 ? "0" + now.getMinutes() : now.getMinutes()}:${
-                now.getSeconds() < 10 ? "0" + now.getSeconds() : now.getSeconds()
-            }`;
+            container.prepend(replayDataContainer);
 
-            return replayButton;
-        });
-
-        const deleteButtons = Array.from({ length: replayDataList.length }, () => {
-            const deleteButton = document.createElement("button");
-            deleteButton.classList.add("replayDeleteButton");
-            return deleteButton;
-        });
-
-        replayContainers.forEach((element, i) => {
-            element.classList.add("replayButtonContainer");
-            element.appendChild(replayButtons[i]);
-
-            const time = document.createElement("span");
-            time.classList.add("replayDataDescription");
-            time.style.fontSize = "0.5em";
-            time.style.width = "40%";
-            time.innerHTML = `Mode: ${replayDataList[i].playSetting.mode}<br>Time: ${replayDataList[i].finishTime / 1000}s`;
-            element.appendChild(time);
-
-            element.appendChild(deleteButtons[i]);
-
-            container.prepend(element);
-        });
+            replayButtons.push(replayButton);
+            deleteButtons.push(deleteButton);
+        }
 
         container.querySelectorAll("button").forEach((button) => {
-            button.addEventListener("mouseover", () => {
-                button.focus();
-            });
-            button.addEventListener("mouseleave", () => {
-                if (document.activeElement == button) {
-                    (button as HTMLButtonElement).blur();
-                }
-            });
+            setHoverHighlight(button);
         });
 
         //座標の割り振り
@@ -67,6 +37,30 @@ export class ReplayDom {
         qs("#savedReplay .back").dataset.mapping = `[0,${replayDataList.length}]`;
 
         return { deleteButtons, replayButtons };
+    }
+
+    private static createReplayDataContainer(replayData: ReplayData) {
+        const replayDataContainer = document.createElement("div");
+
+        const now = new Date(replayData.date);
+        const replayButton = document.createElement("button");
+        replayButton.classList.add("replayButton");
+        replayButton.innerHTML = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${now.getMinutes() < 10 ? "0" + now.getMinutes() : now.getMinutes()}:${
+            now.getSeconds() < 10 ? "0" + now.getSeconds() : now.getSeconds()
+        }`;
+
+        const replayDataDescription = document.createElement("span");
+        replayDataDescription.classList.add("replayDataDescription");
+        replayDataDescription.innerHTML = `Mode: ${replayData.playSetting.mode}<br>Time: ${replayData.finishTime / 1000}s`;
+
+        const deleteButton = document.createElement("button");
+        deleteButton.classList.add("replayDeleteButton");
+
+        replayDataContainer.appendChild(replayButton);
+        replayDataContainer.appendChild(replayDataDescription);
+        replayDataContainer.appendChild(deleteButton);
+
+        return { replayButton, deleteButton, replayDataContainer };
     }
 
     static createTempReplayButton(date: number) {
