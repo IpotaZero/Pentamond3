@@ -12,6 +12,9 @@ const pageOperateEvents: EventId[] = [];
 const listeningInputs: Input[] = [];
 let focusFlag = false;
 let lastOperateTime = 0;
+export let ScreenInteractionSetting = {
+    operable: true,
+};
 
 pageManager.addEvent(["pageChanged"], async () => {
     const page = pageManager.g$currentPage;
@@ -60,7 +63,7 @@ function addPageOperateEvent(id: string, input: Input) {
 
     const eventId = manager.addEvent(["onKeydown", "onButtondown", "onStickActive"], () => {
         //前回の操作から間が空いていないならreturn
-        if (Date.now() - lastOperateTime <= Setting.debounceOperateTime) {
+        if (Date.now() - lastOperateTime <= Setting.debounceOperateTime || !ScreenInteractionSetting.operable) {
             return;
         }
 
@@ -125,11 +128,23 @@ function addPageOperateEvent(id: string, input: Input) {
             operateWithInput();
         }
         if (["ArrowLeft", "KeyA", "button:14", "stick:-0"].includes(latestKey)) {
-            getMoveElement([-1, null]).focus();
+            const element = getMoveElement([-1, null]);
+            if (element.classList.contains("rangeContainer")) {
+                const input = element.querySelector<HTMLInputElement>("input")!;
+                input.stepDown();
+                input.dispatchEvent(new Event("input"));
+            }
+            element.focus();
             operateWithInput();
         }
         if (["ArrowRight", "KeyD", "button:15", "stick:+0"].includes(latestKey)) {
-            getMoveElement([1, null]).focus();
+            const element = getMoveElement([1, null]);
+            if (element.classList.contains("rangeContainer")) {
+                const input = element.querySelector<HTMLInputElement>("input")!;
+                input.stepUp();
+                input.dispatchEvent(new Event("input"));
+            }
+            element.focus();
             operateWithInput();
         }
         if (["Tab"].includes(latestKey)) {
@@ -170,4 +185,13 @@ qsAddEvent("[data-mapping]", "mouseleave", (element) => {
 
 qsAddEvent("[data-mapping]", "click", () => {
     lastOperateTime = Date.now();
+});
+
+//input要素を触った後にそれを含む要素にfocusさせる
+qsAll(".rangeContainer[data-mapping]").forEach((container) => {
+    container.querySelectorAll("input").forEach((element) => {
+        element.addEventListener("click", () => {
+            container.focus();
+        });
+    });
 });
