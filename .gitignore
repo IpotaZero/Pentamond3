@@ -1,7 +1,2 @@
 /.vscode
-/compile.bat
-/package-lock.json
-/package.json
-/run.bat
-/tsconfig.json
-/vite.config.js
+/node_modules
