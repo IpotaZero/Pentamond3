@@ -7,10 +7,11 @@ import { GameMode } from "../Game/GameMode";
 import { ReplayDom } from "./ReplayDom";
 import { ReplayDataHandler } from "./ReplayDataHandler";
 import { pageManager } from "../PageManager";
-import { GameProcessing, PlaySetting } from "../GameProcessing";
+import { GameProcessing, PlaySetting } from "../GameProcessing/GameProcessing";
 import { Input } from "../Interaction/Input";
 import { inputManager } from "../Interaction/InputManager";
 import { ReplayEventSetter } from "./ReplayEventSetter";
+import { qsAddEvent } from "../Utils";
 
 //リプレイ
 export type ReplayData = {
@@ -36,6 +37,21 @@ export type ReplayData = {
  * controller: Replay, EventSetter
  */
 export class Replay {
+    static setEvents() {
+        qsAddEvent("#replayPause button:not(#replayResumeButton)", "click", () => {
+            inputManager.removeVirtualInputs();
+        });
+
+        qsAddEvent("#replayResumeButton", "click", () => {
+            GameProcessing.game?.start();
+        });
+
+        qsAddEvent(".replayStart", "click", () => {
+            pageManager.backLatestPage("replay", { eventIgnore: true });
+            Replay.startReplay(GameProcessing.readingReplayData!);
+        });
+    }
+
     static getDataSize() {
         return ReplayDataHandler.getDataSize();
     }

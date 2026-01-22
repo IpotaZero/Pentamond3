@@ -2,11 +2,11 @@ import { EventManager } from "../../EventManager";
 import { gameEvents, GameMode } from "../GameMode";
 import { GamePlayer } from "../GamePlayer";
 import { pageManager } from "../../PageManager";
-import { gamepadConfigs } from "../../Run";
 import * as Setting from "../../Settings";
 import { qsAll, removeMousePointerTemporary } from "../../Utils";
 import { playBackground } from "../../PlayBackground";
 import { GraphicSetting } from "../../GraphicSetting";
+import { PlayerRegister } from "../../PlayerRegister";
 
 export class Mode2 extends GameMode {
     constructor(players: GamePlayer[]) {
@@ -74,25 +74,25 @@ export class Mode2 extends GameMode {
         const p = this.players[index];
         const input = p.input.g$manager;
         const operate = (keyCode: string) => {
-            if (["ArrowLeft", ...gamepadConfigs[index].moveLeft].includes(keyCode)) {
+            if (["ArrowLeft", ...PlayerRegister.gamepadConfigs[index].moveLeft].includes(keyCode)) {
                 p.operator.move("left");
-            } else if (["ArrowRight", ...gamepadConfigs[index].moveRight].includes(keyCode)) {
+            } else if (["ArrowRight", ...PlayerRegister.gamepadConfigs[index].moveRight].includes(keyCode)) {
                 p.operator.move("right");
-            } else if (["ArrowDown", ...gamepadConfigs[index].moveDown].includes(keyCode)) {
+            } else if (["ArrowDown", ...PlayerRegister.gamepadConfigs[index].moveDown].includes(keyCode)) {
                 p.operator.move("down");
-            } else if (["ArrowUp", ...gamepadConfigs[index].put].includes(keyCode)) {
+            } else if (["ArrowUp", ...PlayerRegister.gamepadConfigs[index].put].includes(keyCode)) {
                 p.operator.put();
-            } else if (["KeyC", ...gamepadConfigs[index].spinLeft].includes(keyCode)) {
+            } else if (["KeyC", ...PlayerRegister.gamepadConfigs[index].spinLeft].includes(keyCode)) {
                 p.operator.spin("left");
-            } else if (["KeyV", ...gamepadConfigs[index].spinRight].includes(keyCode)) {
+            } else if (["KeyV", ...PlayerRegister.gamepadConfigs[index].spinRight].includes(keyCode)) {
                 p.operator.spin("right");
-            } else if (["KeyB", ...gamepadConfigs[index].unput].includes(keyCode)) {
+            } else if (["KeyB", ...PlayerRegister.gamepadConfigs[index].unput].includes(keyCode)) {
                 p.operator.unput();
-            } else if (["Space", ...gamepadConfigs[index].hold].includes(keyCode)) {
+            } else if (["Space", ...PlayerRegister.gamepadConfigs[index].hold].includes(keyCode)) {
                 p.operator.hold();
-            } else if (["Enter", ...gamepadConfigs[index].removeLine].includes(keyCode)) {
+            } else if (["Enter", ...PlayerRegister.gamepadConfigs[index].removeLine].includes(keyCode)) {
                 p.operator.removeLine();
-            } else if (["KeyP", ...gamepadConfigs[index].pause].includes(keyCode)) {
+            } else if (["KeyP", ...PlayerRegister.gamepadConfigs[index].pause].includes(keyCode)) {
                 if (!p.loop.g$isLooping || this.state.hasFinished) {
                     return;
                 }
@@ -127,7 +127,14 @@ export class Mode2 extends GameMode {
             }),
 
             p.loop.addEvent(["loop"], () => {
-                const moveKeys = ["ArrowLeft", "ArrowRight", "ArrowDown", ...gamepadConfigs[index].moveLeft, ...gamepadConfigs[index].moveRight, ...gamepadConfigs[index].moveDown];
+                const moveKeys = [
+                    "ArrowLeft",
+                    "ArrowRight",
+                    "ArrowDown",
+                    ...PlayerRegister.gamepadConfigs[index].moveLeft,
+                    ...PlayerRegister.gamepadConfigs[index].moveRight,
+                    ...PlayerRegister.gamepadConfigs[index].moveDown,
+                ];
                 const latestKey = input.getLatestPressingKey(moveKeys);
                 const pressTime = Date.now() - input.getPressTime(latestKey);
                 if (pressTime >= Setting.input.delayTime && latestKey != "") {

@@ -4,7 +4,7 @@ import { ReplayData } from "./Replay";
 
 import { qs } from "../Utils";
 import { replayDataDecryption, replayDataEncryption } from "./DataCompression";
-import { PlaySetting } from "../GameProcessing";
+import { PlaySetting } from "../GameProcessing/GameProcessing";
 
 export class ReplayDataHandler {
     static tempDataList: ReplayData[] = [];

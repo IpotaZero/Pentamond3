@@ -5,7 +5,7 @@ import { inputManager } from "./Interaction/InputManager";
 import { pageManager } from "./PageManager";
 import { sleep, qs, qsAll, getMinElement, removeMousePointerTemporary, qsAddEvent } from "./Utils";
 import * as Setting from "./Settings";
-import { GameProcessing } from "./GameProcessing";
+import { GameProcessing } from "./GameProcessing/GameProcessing";
 
 //画面のinputによる操作
 const pageOperateEvents: EventId[] = [];
