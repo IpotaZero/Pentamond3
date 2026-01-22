@@ -26,6 +26,8 @@ export function countDown(countString: string[]) {
         };
     };
 
+    handler();
+
     return new Promise<void>((resolve) => {
         r = resolve;
     });

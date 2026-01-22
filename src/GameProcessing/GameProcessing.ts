@@ -48,6 +48,7 @@ export class GameProcessing {
         playBackground.reset();
 
         //登録されているinputをもとにplayersを作成する
+        const playContainer = qs("#play");
         this.players = this.createPlayers(
             this.playSetting.maxGameTime,
             inputManager.g$registeredInputs,
@@ -55,6 +56,9 @@ export class GameProcessing {
 
             { readingReplayData: this.replay ? this.readingReplayData : null }
         );
+        this.players.forEach((player) => {
+            playContainer.appendChild(player.g$element);
+        });
 
         // ゲームを作成
         const CurrentMode = this.ModeClassList[this.playSetting.mode - 1];
