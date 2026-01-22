@@ -56,54 +56,7 @@ export const trickInfos: TrickInfo[] = [
             [false, true],
         ],
     },
-    {
-        name: "地割れ(上)",
-        time: 14,
-        attack: 7,
-        shape: [
-            [true, true],
-            [false, true],
-            [true, true],
-            [false, true],
-            [true, true],
-            [false, true],
-            [true, true],
-            [false, true],
-            [true, false],
-            [true, true],
-            [false, true],
-            [true, true],
-            [false, true],
-            [true, true],
-            [false, true],
-            [true, true],
-            [false, true],
-        ],
-    },
-    {
-        name: "地割れ(下)",
-        time: 14,
-        attack: 7,
-        shape: [
-            [false, true],
-            [true, true],
-            [false, true],
-            [true, true],
-            [false, true],
-            [true, true],
-            [false, true],
-            [true, true],
-            [true, false],
-            [false, true],
-            [true, true],
-            [false, true],
-            [true, true],
-            [false, true],
-            [true, true],
-            [false, true],
-            [true, true],
-        ],
-    },
+    ...地割れ(),
     {
         name: "地殻変動(上)",
         time: 16,
@@ -297,3 +250,62 @@ export const trickInfos: TrickInfo[] = [
         ],
     },
 ];
+
+function 地割れ(): TrickInfo[] {
+    const list: TrickInfo[] = [];
+
+    for (let h = 1; h < 16; h++) {
+        const l: ("up" | "down" | "none")[] = [];
+
+        for (let i = 0; i < h; i++) {
+            l.push(i % 2 === 0 ? "up" : "down");
+        }
+
+        l.push("none");
+
+        for (let i = 1; i < 17 - h; i++) {
+            l.push((i + h + 1) % 2 === 0 ? "up" : "down");
+        }
+
+        list.push({
+            name: "地割れ(上)",
+            time: 8,
+            attack: 9,
+            shape: l.map(transpile),
+        });
+    }
+
+    for (let h = 1; h < 16; h++) {
+        const l: ("up" | "down" | "none")[] = [];
+
+        for (let i = 0; i < h; i++) {
+            l.push(i % 2 === 1 ? "up" : "down");
+        }
+
+        l.push("none");
+
+        for (let i = 1; i < 17 - h; i++) {
+            l.push((i + h + 1) % 2 === 1 ? "up" : "down");
+        }
+
+        list.push({
+            name: "地割れ(下)",
+            time: 8,
+            attack: 9,
+            shape: l.map(transpile),
+        });
+    }
+
+    return list;
+}
+
+function transpile(shape: "up" | "down" | "none"): ShapeInfo {
+    switch (shape) {
+        case "up":
+            return [true, true];
+        case "down":
+            return [false, true];
+        case "none":
+            return [true, false];
+    }
+}
