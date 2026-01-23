@@ -34,10 +34,7 @@ export class GameStartEventSetter {
         // replayPauseとreplayResultの「もう一度」
         qsAddEvent(".replayStart", "click", () => {
             pageManager.backLatestPage("replay", { eventIgnore: true });
-
-            if (!GameProcessing.readingReplayData) throw new Error("リプレイデータが選択されていません。");
-
-            GameProcessing.startReplay(GameProcessing.readingReplayData);
+            GameProcessing.restartReplay();
         });
     }
 }

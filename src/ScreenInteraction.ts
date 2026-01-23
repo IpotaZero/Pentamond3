@@ -92,7 +92,7 @@ function addPageOperateEvent(id: string, input: Input) {
                 if (!currentGame) throw new Error("ゲームが始められていないのにポーズされた。");
 
                 // currentGameの中身はできるだけprivateにしたいのでここら辺何とかしたい
-                if (GameProcessing.isReplay() && currentGame.players[0].loop.g$isLooping) {
+                if (GameProcessing.isReplaying() && currentGame.players[0].loop.g$isLooping) {
                     currentGame.game.stop();
                     pageManager.setPage("replayPause");
                 }

@@ -15,8 +15,6 @@ import { qs } from "../Utils";
 export class GameProcessing {
     private static readonly ModeClassList = [Mode1, Mode2];
 
-    static readingReplayData: ReplayData | null = null;
-
     static currentGame: DisposableGame | null = null;
 
     static resume() {
@@ -24,9 +22,14 @@ export class GameProcessing {
         this.currentGame.game.start();
     }
 
-    static isReplay() {
+    static isReplaying(): this is GameProcessing & { currentGame: DisposableGame & { replayData: ReplayData } } {
         if (!this.currentGame) throw new Error("プレイ中ではない");
         return this.currentGame.isReplay();
+    }
+
+    static restartReplay() {
+        if (!this.isReplaying()) throw new Error("リプレイ中ではない");
+        this.startReplay(this.currentGame.replayData);
     }
 
     static async startNormal(playSetting: PlaySetting) {

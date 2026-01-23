@@ -4,7 +4,6 @@ import { qs, qsAddEvent, qsAll, sleep } from "./Utils";
 
 import * as Setting from "./Settings";
 import { debug } from "./Run";
-import { GameProcessing } from "./GameProcessing/GameProcessing";
 
 export type PlaySetting = {
     playerNumber: number;
@@ -105,9 +104,6 @@ export class BeforePlay {
 
     // normalを準備
     private static startControllerRegistration() {
-        // 今から行うのはreplayではない
-        GameProcessing.readingReplayData = null;
-
         // 既に登録されているものを外す
         if (inputManager.g$registeredInputNumber > 0) {
             inputManager.removeVirtualInputs();
