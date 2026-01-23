@@ -56,19 +56,7 @@ export class GameProcessing {
     static async startReplay(replayData: ReplayData) {
         this.beforeStart();
 
-        inputManager.removeVirtualInputs();
-        inputManager.resetRegister();
-        inputManager.s$maxInputNumber = replayData.playSetting.playerNumber;
-
-        const playerNumber = replayData.playSetting.playerNumber;
-        for (let i = 0; i < playerNumber; i++) {
-            const input = new Input("autoKeyboard");
-
-            if (!input.isAuto()) throw new Error("あ");
-
-            input.g$manager.s$inputData = replayData.inputData[i];
-            inputManager.register(input);
-        }
+        this.setupReplayInputs(replayData);
 
         this.currentGame = new DisposableGame(
             this.ModeClassList,
@@ -86,6 +74,26 @@ export class GameProcessing {
 
         await this.countDownAndStart();
 
+        this.startAutoPlay();
+    }
+
+    private static setupReplayInputs(replayData: ReplayData) {
+        inputManager.removeVirtualInputs();
+        inputManager.resetRegister();
+        inputManager.s$maxInputNumber = replayData.playSetting.playerNumber;
+
+        const playerNumber = replayData.playSetting.playerNumber;
+        for (let i = 0; i < playerNumber; i++) {
+            const input = new Input("autoKeyboard");
+
+            if (!input.isAuto()) throw new Error("あ");
+
+            input.g$manager.s$inputData = replayData.inputData[i];
+            inputManager.register(input);
+        }
+    }
+
+    private static startAutoPlay() {
         inputManager.g$registeredInputs.forEach((input) => {
             if (!input.isAuto()) throw new Error("あ");
 
