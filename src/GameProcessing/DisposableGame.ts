@@ -18,7 +18,7 @@ export class DisposableGame {
 
     onFinished = () => {};
 
-    constructor(gameModeList: (typeof GameMode)[], inputs: Input[], inoutCount: number, { playSetting, replayData }: { playSetting?: PlaySetting; replayData?: ReplayData }) {
+    constructor(gameModeList: (typeof GameMode)[], inputs: Input[], inputCount: number, { playSetting, replayData }: { playSetting?: PlaySetting; replayData?: ReplayData }) {
         if (replayData) {
             this.replayData = replayData;
             this.playSetting = replayData.playSetting;
@@ -29,7 +29,7 @@ export class DisposableGame {
         }
 
         //登録されているinputをもとにplayersを作成する
-        this.players = DisposableGame.createPlayers(this.playSetting.maxGameTime, inputs, inoutCount, { replayData: this.replayData });
+        this.players = DisposableGame.createPlayers(this.playSetting.maxGameTime, inputs, inputCount, { replayData: this.replayData });
 
         // ゲームを作成
         const CurrentMode = gameModeList[this.playSetting.mode - 1];
