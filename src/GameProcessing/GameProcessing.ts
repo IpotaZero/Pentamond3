@@ -27,6 +27,11 @@ export class GameProcessing {
         return this.currentGame.isReplay();
     }
 
+    static restartNormal() {
+        if (!this.currentGame) throw new Error("プレイ中ではない");
+        this.startNormal(this.currentGame.playSetting);
+    }
+
     static restartReplay() {
         if (!this.isReplaying()) throw new Error("リプレイ中ではない");
         this.startReplay(this.currentGame.replayData);
@@ -47,7 +52,6 @@ export class GameProcessing {
             this.onFinishNormal();
         };
 
-        // 画面にappend
         this.currentGame.appendPlayersTo(qs("#play"));
 
         await this.countDownAndStart();
@@ -133,6 +137,10 @@ export class GameProcessing {
     }
 
     private static beforeStart() {
+        if (this.currentGame) {
+            this.currentGame.quit();
+        }
+
         // 背景をリセット
         playBackground.reset();
 

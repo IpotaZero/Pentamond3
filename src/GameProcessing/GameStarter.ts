@@ -11,11 +11,18 @@ export class GameStartEventSetter {
     }
 
     private static normal() {
+        // 「スタート!」
         qsAddEvent(".playStart", "click", () => {
-            pageManager.backLatestPage("playPrepare", { eventIgnore: true });
             GameProcessing.startNormal(BeforePlay.playSetting);
         });
 
+        // ポーズ画面の「もう一度」・リザルト画面の「もう一度」
+        qsAddEvent(".restart", "click", () => {
+            pageManager.backLatestPage("playPrepare", { eventIgnore: true });
+            GameProcessing.restartNormal();
+        });
+
+        // ポーズ画面の「再開する」
         qsAddEvent("#resumeButton", "click", () => {
             GameProcessing.resume();
         });
@@ -27,11 +34,12 @@ export class GameStartEventSetter {
             inputManager.removeVirtualInputs();
         });
 
+        // ポーズ画面の「再開する」
         qsAddEvent("#replayResumeButton", "click", () => {
             GameProcessing.resume();
         });
 
-        // replayPauseとreplayResultの「もう一度」
+        // ポーズ画面の「もう一度」・リザルト画面の「もう一度」
         qsAddEvent(".replayStart", "click", () => {
             pageManager.backLatestPage("replay", { eventIgnore: true });
             GameProcessing.restartReplay();

@@ -40,6 +40,11 @@ export class DisposableGame {
         });
     }
 
+    quit() {
+        this.game.stop();
+        this.game.remove();
+    }
+
     appendPlayersTo(container: HTMLElement) {
         this.players.forEach((player) => {
             container.appendChild(player.g$element);
