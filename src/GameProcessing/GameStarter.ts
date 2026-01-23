@@ -40,8 +40,8 @@ export class GameStartEventSetter {
         });
 
         // ポーズ画面の「もう一度」・リザルト画面の「もう一度」
-        qsAddEvent(".replayStart", "click", () => {
-            pageManager.backLatestPage("replay", { eventIgnore: true });
+        qsAddEvent(".replayStart", "click", async () => {
+            pageManager.backPages(2, { eventIgnore: true });
             GameProcessing.restartReplay();
         });
     }
