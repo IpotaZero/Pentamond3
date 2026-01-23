@@ -31,7 +31,6 @@ export class ResultPageHandler {
                 Replay.setupSavedReplayPage();
                 saveButton.innerText = "保存しました";
                 saveButton.onclick = () => {};
-            } else {
             }
         };
     }
