@@ -8,7 +8,7 @@ import { GraphicSetting } from "./GraphicSetting";
 import { soundsInit } from "./SoundProcessing";
 import { BeforePlay } from "./BeforePlay";
 import { DeleteDataHandler } from "./DeleteDataHandler";
-import { GameStarter } from "./GameProcessing/GameStarter";
+import { GameStartEventSetter } from "./GameProcessing/GameStarter";
 
 //不正なページ遷移の防止
 setupInputBehavior();
@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     pageManager.init();
     inputManager.s$maxInputNumber = 1;
 
-    GameStarter.setEvents();
+    GameStartEventSetter.setEvents();
 
     //コントローラー登録
     BeforePlay.setEvents();

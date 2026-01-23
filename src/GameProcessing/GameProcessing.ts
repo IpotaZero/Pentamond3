@@ -15,6 +15,8 @@ import { qs } from "../Utils";
 export class GameProcessing {
     private static readonly ModeClassList = [Mode1, Mode2];
 
+    static readingReplayData: ReplayData | null = null;
+
     static currentGame: DisposableGame | null = null;
 
     static resume() {

@@ -4,7 +4,7 @@ import { qs, qsAddEvent, qsAll, sleep } from "./Utils";
 
 import * as Setting from "./Settings";
 import { debug } from "./Run";
-import { CurrentState } from "./CurrentState";
+import { GameProcessing } from "./GameProcessing/GameProcessing";
 
 export type PlaySetting = {
     playerNumber: number;
@@ -41,7 +41,7 @@ export class BeforePlay {
 
         // コントローラーの登録の準備
         pageManager.addEvent(["setPage-playerRegister"], () => {
-            this.prepareControllerRegistration();
+            this.startControllerRegistration();
         });
 
         // キャンセル時
@@ -104,9 +104,9 @@ export class BeforePlay {
     }
 
     // normalを準備
-    private static prepareControllerRegistration() {
+    private static startControllerRegistration() {
         // 今から行うのはreplayではない
-        CurrentState.readingReplayData = null;
+        GameProcessing.readingReplayData = null;
 
         // 既に登録されているものを外す
         if (inputManager.g$registeredInputNumber > 0) {
