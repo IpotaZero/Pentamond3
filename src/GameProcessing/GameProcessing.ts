@@ -23,15 +23,20 @@ export class GameProcessing {
     }
 
     static isReplaying(): this is GameProcessing & { currentGame: DisposableGame & { replayData: ReplayData } } {
-        if (!this.currentGame) throw new Error("プレイ中ではない");
-        return this.currentGame.isReplay();
+        return !!this.currentGame?.isReplay();
     }
 
+    /**
+     * 前回の設定と同じでプレイする
+     */
     static restartNormal() {
-        if (!this.currentGame) throw new Error("プレイ中ではない");
+        if (!this.currentGame) throw new Error("一度もプレイされていない");
         this.startNormal(this.currentGame.playSetting);
     }
 
+    /**
+     * 前回の設定と同じでリプレイする
+     */
     static restartReplay() {
         if (!this.isReplaying()) throw new Error("リプレイ中ではない");
         this.startReplay(this.currentGame.replayData);
@@ -113,8 +118,6 @@ export class GameProcessing {
         Replay.addTempData(this.currentGame!);
         ResultPageHandler.setSaveButton();
         ResultPageHandler.updateDetailedResultPage(this.currentGame!);
-
-        this.currentGame = null;
     }
 
     private static onFinishReplay() {
@@ -123,8 +126,6 @@ export class GameProcessing {
 
         ResultPageHandler.OverWriteTime(this.currentGame!.replayData!.finishTime);
         ResultPageHandler.updateDetailedResultPage(this.currentGame!);
-
-        this.currentGame = null;
     }
 
     private static async countDownAndStart() {
