@@ -99,10 +99,7 @@ export class ControllerRegisterer {
             element.remove();
         });
 
-        qs("#registerText").innerText = `
-            登録したい入力機器のボタンを押してください：
-            あと${playerNumber - inputManager.g$registeredInputNumber}人
-        `;
+        qs("#registerText").innerText = `登録したい入力機器のボタンを押してください：あと${playerNumber - inputManager.g$registeredInputNumber}人`;
 
         this.gamepadConfigs = [];
 
@@ -120,10 +117,7 @@ export class ControllerRegisterer {
         // typeIcon.innerHTML = registerInputs[registerInputs.length - 1].g$type;
         qs("#connectionLabel").appendChild(typeIcon);
 
-        qs("#registerText").innerText = `
-            登録したい入力機器のボタンを押してください：
-            あと${playerNumber - inputManager.g$registeredInputNumber}人
-        `;
+        qs("#registerText").innerText = `登録したい入力機器のボタンを押してください：あと${playerNumber - inputManager.g$registeredInputNumber}人`;
 
         this.gamepadConfigs.push(Setting.gamepadConfigPresets[0]);
     }
