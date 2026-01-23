@@ -9,6 +9,7 @@ import { soundsInit } from "./SoundProcessing";
 import { ControllerRegisterer } from "./BeforePlaying/ControllerRegisterer";
 import { DeleteDataHandler } from "./DeleteDataHandler";
 import { GameStartEventSetter } from "./GameProcessing/GameStarter";
+import { PlaySettingSetter } from "./BeforePlaying/PlaySettingSetter";
 
 //不正なページ遷移の防止
 setupInputBehavior();
@@ -46,7 +47,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     GameStartEventSetter.setEvents();
 
-    //コントローラー登録
+    // BeforePlaying
+    PlaySettingSetter.setEvents();
     ControllerRegisterer.setEvents();
 
     soundsInit();

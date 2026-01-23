@@ -17,7 +17,10 @@ export class ControllerRegisterer {
         let currentPlayerNumber = 1;
 
         // コントローラーの登録の準備
-        pageManager.addEvent(["setPage-playerRegister"], () => {
+        pageManager.addEvent(["setPage-playerRegister"], async () => {
+            // なぜかPlaySettingSetterよりもこっちが早く反応するから遅らせる
+            await sleep(1);
+
             const { playerNumber } = PlaySettingSetter.getPlaySetting();
 
             currentPlayerNumber = playerNumber;
