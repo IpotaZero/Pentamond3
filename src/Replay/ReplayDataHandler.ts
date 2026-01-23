@@ -69,7 +69,7 @@ export class ReplayDataHandler {
     static async removeSavedReplayData(data: ReplayData) {
         const replayDataList = await this.getReplayDataList();
         const removedList = replayDataList.filter((value) => value.date != data.date);
-        const encodedList = removedList.map((d) => replayDataEncryption(d));
+        const encodedList = await Promise.all(removedList.map((d) => replayDataEncryption(d)));
         const json = JSON.stringify(encodedList);
 
         localStorage.setItem("Pentamond3-replayData", json);
