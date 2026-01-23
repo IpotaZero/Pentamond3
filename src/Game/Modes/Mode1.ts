@@ -7,7 +7,7 @@ import { qsAll, removeMousePointerTemporary } from "../../Utils";
 import { playBackground } from "../../PlayBackground";
 import { GraphicSetting } from "../../GraphicSetting";
 import { se } from "../../SoundProcessing";
-import { PlayerRegister } from "../../PlayerRegister";
+import { BeforePlay } from "../../BeforePlay";
 
 export class Mode1 extends GameMode {
     constructor(players: GamePlayer[]) {
@@ -108,25 +108,25 @@ export class Mode1 extends GameMode {
         const p = this.players[index];
         const input = p.input.g$manager;
         const operate = (keyCode: string) => {
-            if (["ArrowLeft", ...PlayerRegister.gamepadConfigs[index].moveLeft].includes(keyCode)) {
+            if (["ArrowLeft", ...BeforePlay.gamepadConfigs[index].moveLeft].includes(keyCode)) {
                 p.operator.move("left");
-            } else if (["ArrowRight", ...PlayerRegister.gamepadConfigs[index].moveRight].includes(keyCode)) {
+            } else if (["ArrowRight", ...BeforePlay.gamepadConfigs[index].moveRight].includes(keyCode)) {
                 p.operator.move("right");
-            } else if (["ArrowDown", ...PlayerRegister.gamepadConfigs[index].moveDown].includes(keyCode)) {
+            } else if (["ArrowDown", ...BeforePlay.gamepadConfigs[index].moveDown].includes(keyCode)) {
                 p.operator.move("down");
-            } else if (["ArrowUp", ...PlayerRegister.gamepadConfigs[index].put].includes(keyCode)) {
+            } else if (["ArrowUp", ...BeforePlay.gamepadConfigs[index].put].includes(keyCode)) {
                 p.operator.put();
-            } else if (["KeyC", ...PlayerRegister.gamepadConfigs[index].spinLeft].includes(keyCode)) {
+            } else if (["KeyC", ...BeforePlay.gamepadConfigs[index].spinLeft].includes(keyCode)) {
                 p.operator.spin("left");
-            } else if (["KeyV", ...PlayerRegister.gamepadConfigs[index].spinRight].includes(keyCode)) {
+            } else if (["KeyV", ...BeforePlay.gamepadConfigs[index].spinRight].includes(keyCode)) {
                 p.operator.spin("right");
-            } else if (["KeyB", ...PlayerRegister.gamepadConfigs[index].unput].includes(keyCode)) {
+            } else if (["KeyB", ...BeforePlay.gamepadConfigs[index].unput].includes(keyCode)) {
                 p.operator.unput();
-            } else if (["Space", ...PlayerRegister.gamepadConfigs[index].hold].includes(keyCode)) {
+            } else if (["Space", ...BeforePlay.gamepadConfigs[index].hold].includes(keyCode)) {
                 p.operator.hold();
-            } else if (["Enter", ...PlayerRegister.gamepadConfigs[index].removeLine].includes(keyCode)) {
+            } else if (["Enter", ...BeforePlay.gamepadConfigs[index].removeLine].includes(keyCode)) {
                 p.operator.removeLine();
-            } else if (["KeyP", ...PlayerRegister.gamepadConfigs[index].pause].includes(keyCode)) {
+            } else if (["KeyP", ...BeforePlay.gamepadConfigs[index].pause].includes(keyCode)) {
                 if (!p.loop.g$isLooping || this.state.hasFinished) {
                     return;
                 }
@@ -166,9 +166,9 @@ export class Mode1 extends GameMode {
                     "ArrowLeft",
                     "ArrowRight",
                     "ArrowDown",
-                    ...PlayerRegister.gamepadConfigs[index].moveLeft,
-                    ...PlayerRegister.gamepadConfigs[index].moveRight,
-                    ...PlayerRegister.gamepadConfigs[index].moveDown,
+                    ...BeforePlay.gamepadConfigs[index].moveLeft,
+                    ...BeforePlay.gamepadConfigs[index].moveRight,
+                    ...BeforePlay.gamepadConfigs[index].moveDown,
                 ];
                 const latestKey = input.getLatestPressingKey(moveKeys);
                 const pressTime = Date.now() - input.getPressTime(latestKey);

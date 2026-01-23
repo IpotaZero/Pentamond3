@@ -1,183 +1,113 @@
-import { GameMode } from "../Game/GameMode";
 import { Mode1 } from "../Game/Modes/Mode1";
 import { Mode2 } from "../Game/Modes/Mode2";
 import { AutoKeyboardManager } from "../Interaction/AutoKeyboardManager";
+import { Input } from "../Interaction/Input";
 import { inputManager } from "../Interaction/InputManager";
 import { pageManager } from "../PageManager";
 import { playBackground } from "../PlayBackground";
+import { PlaySetting } from "../BeforePlay";
 import { Replay, ReplayData } from "../Replay/Replay";
+import { DisposableGame } from "./DisposableGame";
 import { ResultPageHandler } from "./ResultPageHandler";
-import { qs, qsAll, sleep } from "../Utils";
 import { countDown } from "./countDown";
-import { GamePlayer } from "../Game/GamePlayer";
-import { Input } from "../Interaction/Input";
 
 //ゲーム開始
-export type PlaySetting = {
-    playerNumber: number;
-    mode: number;
-    maxGameTime: number;
-    handy: number[];
-};
-
 export class GameProcessing {
-    private static readonly ModeClassList = [Mode1, Mode2];
+    static readonly ModeClassList = [Mode1, Mode2];
 
-    static playSetting: PlaySetting = {
-        playerNumber: 1,
-        mode: 1,
-        maxGameTime: 300,
-        handy: [1],
-    };
+    static currentGame: DisposableGame | null = null;
 
-    static game: GameMode | null = null;
-
-    static players: GamePlayer[] = [];
-
-    static replay = false;
-    static readingReplayData: ReplayData | null = null;
-
-    static async start() {
-        //プレイが終了していない場合は終了させる
-        if (this.game) {
-            this.game.stop();
-            this.game.remove();
-        }
-
-        // 背景をリセット
-        playBackground.reset();
-
-        //登録されているinputをもとにplayersを作成する
-        const playContainer = qs("#play");
-        this.players = this.createPlayers(
-            this.playSetting.maxGameTime,
-            inputManager.g$registeredInputs,
-            inputManager.g$maxInputNumber,
-
-            { readingReplayData: this.replay ? this.readingReplayData : null }
-        );
-        this.players.forEach((player) => {
-            playContainer.appendChild(player.g$element);
-        });
-
-        // ゲームを作成
-        const CurrentMode = this.ModeClassList[this.playSetting.mode - 1];
-        this.game = new CurrentMode(this.players);
-        this.game.addEvent(["gameFinish"], async () => {
-            await this.onGameFinish();
-        });
-
-        // ページ移動
-        pageManager.setPage("play", { eventIgnore: true });
-        pageManager.setPage("startEffect");
-
-        //開始演出
-        await countDown(["", "3", "2", "1", "START!"]);
-
-        // 開始
-        this.startGame();
+    static resume() {
+        if (!this.currentGame) throw new Error("プレイ中ではない");
+        this.currentGame.game.start();
     }
 
-    static createPlayers(maxGameTime: number, inputs: Input[], inputCount: number, { readingReplayData }: { readingReplayData: ReplayData | null }) {
-        const players = inputs.map((input) => new GamePlayer(input));
-
-        players.forEach((player, i) => {
-            if (inputCount == 1) {
-                player.g$element.style.flex = "none";
-                player.g$element.style.height = "100%";
-                player.g$element.style.width = "";
-            } else {
-                player.g$element.style.flex = "";
-                player.g$element.style.height = "";
-                player.g$element.style.width = `0px`;
-            }
-
-            player.playInfo.maxGameTime = maxGameTime;
-            player.playInfo.gameTime = maxGameTime;
-
-            //リプレイ情報の読み込み
-            if (readingReplayData) {
-                player.operator.s$next = readingReplayData!.nextData[i];
-                player.nuisanceMondManager.s$spawnCoordinates = readingReplayData!.nuisanceBlockData[i];
-            }
-        });
-
-        return players;
+    static isReplay() {
+        if (!this.currentGame) throw new Error("プレイ中ではない");
+        return this.currentGame.isReplay();
     }
 
-    private static startGame() {
-        pageManager.backPages(1);
+    static async startNormal(playSetting: PlaySetting) {
+        this.beforeStart();
 
-        this.game!.start();
+        this.currentGame = new DisposableGame(inputManager.g$registeredInputs, inputManager.g$maxInputNumber, { playSetting });
 
-        inputManager.g$registeredInputs.forEach((input) => {
-            if (input.g$type == "autoKeyboard") {
-                (input.g$manager as AutoKeyboardManager).playReset();
-                (input.g$manager as AutoKeyboardManager).playStart();
-            }
-        });
-    }
-
-    private static async onGameFinish() {
-        if (!this.game) {
-            return;
-        }
-
-        if (this.replay && this.readingReplayData) {
-            this.onFinishReplay();
-        } else {
+        this.currentGame.onFinished = () => {
             this.onFinishNormal();
-        }
+        };
 
-        ResultPageHandler.updateDetailedResultPage(this.players, this.playSetting);
+        await this.countDownAndStart();
+    }
+
+    static async startReplay(replayData: ReplayData) {
+        this.beforeStart();
 
         inputManager.removeVirtualInputs();
+        inputManager.resetRegister();
+        inputManager.s$maxInputNumber = replayData.playSetting.playerNumber;
 
-        await sleep(1000);
+        const playerNumber = replayData.playSetting.playerNumber;
+        for (let i = 0; i < playerNumber; i++) {
+            const input = new Input("autoKeyboard");
 
-        if (this.replay) {
-            pageManager.setPage("replayResult");
-        } else {
-            pageManager.setPage("result");
+            if (!input.isAuto()) throw new Error("あ");
+
+            input.g$manager.s$inputData = replayData.inputData[i];
+            inputManager.register(input);
         }
 
-        this.game.remove();
-        this.game = null;
-    }
+        this.currentGame = new DisposableGame(inputManager.g$registeredInputs, inputManager.g$maxInputNumber, { replayData });
 
-    private static onFinishReplay() {
-        const data = this.readingReplayData!;
+        this.currentGame.onFinished = () => {
+            this.onFinishReplay();
+        };
 
-        data.finishPlayers.forEach((index) => {
-            const player = this.players![index - 1];
-            player.playInfo.playTime = data.finishTime;
-            player.label.updateContents({ playTime: (data.finishTime / 1000).toFixed(2) });
-        });
+        await this.countDownAndStart();
 
-        qsAll(".resultLabel").forEach((resultLabel) => {
-            if (resultLabel.innerText.includes("Time")) {
-                resultLabel.innerText = `Time : ${(this.readingReplayData!.finishTime / 1000).toFixed(2)}`;
-            }
+        inputManager.g$registeredInputs.forEach((input) => {
+            if (!input.isAuto()) throw new Error("あ");
+
+            input.g$manager.playReset();
+            input.g$manager.playStart();
         });
     }
 
     private static onFinishNormal() {
-        Replay.addTempData(this.players, this.game!, this.playSetting);
+        pageManager.setPage("result");
+        inputManager.removeVirtualInputs();
 
-        const saveButton = qs("#result .saveReplayButton");
-        saveButton.innerText = "リプレイを保存する";
+        Replay.addTempData(this.currentGame!);
+        ResultPageHandler.setSaveButton();
+        ResultPageHandler.updateDetailedResultPage(this.currentGame!);
 
-        saveButton.onclick = () => {
-            saveButton.innerText = "保存中……";
+        this.currentGame = null;
+    }
 
-            const succeed = Replay.saveLastOne();
-            if (succeed) {
-                Replay.setupSavedReplayPage();
-                saveButton.innerText = "保存しました";
-                saveButton.onclick = () => {};
-            } else {
-                saveButton.innerText = "リプレイを保存する";
-            }
-        };
+    private static onFinishReplay() {
+        pageManager.setPage("replayResult");
+        inputManager.removeVirtualInputs();
+
+        ResultPageHandler.OverWriteTime(this.currentGame!.replayData!.finishTime);
+        ResultPageHandler.updateDetailedResultPage(this.currentGame!);
+
+        this.currentGame = null;
+    }
+
+    private static async countDownAndStart() {
+        //開始演出
+        await countDown(["", "3", "2", "1", "START!"]);
+
+        this.currentGame!.start();
+
+        pageManager.backPages(1);
+    }
+
+    private static beforeStart() {
+        // 背景をリセット
+        playBackground.reset();
+
+        // ページ移動
+        pageManager.setPage("play", { eventIgnore: true });
+        pageManager.setPage("startEffect");
     }
 }

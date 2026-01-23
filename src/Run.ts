@@ -4,11 +4,11 @@ import { qs, qsAddEvent, qsAll, sleep } from "./Utils";
 import { inputManager } from "./Interaction/InputManager";
 import "./ScreenInteraction";
 import { Replay } from "./Replay/Replay";
-import { GameProcessing } from "./GameProcessing/GameProcessing";
 import { GraphicSetting } from "./GraphicSetting";
 import { soundsInit } from "./SoundProcessing";
-import { PlayerRegister } from "./PlayerRegister";
+import { BeforePlay } from "./BeforePlay";
 import { DeleteDataHandler } from "./DeleteDataHandler";
+import { GameStarter } from "./GameProcessing/GameStarter";
 
 //不正なページ遷移の防止
 setupInputBehavior();
@@ -44,8 +44,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     pageManager.init();
     inputManager.s$maxInputNumber = 1;
 
+    GameStarter.setEvents();
+
     //コントローラー登録
-    PlayerRegister.setEvents();
+    BeforePlay.setEvents();
 
     soundsInit();
 
@@ -56,33 +58,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     DeleteDataHandler.setEvents();
 
     // リプレイのイベントの設定と、リプレイページの設定
-    Replay.setEvents();
     Replay.setupSavedReplayPage();
     console.log(`The sum of size of replayData is ${Replay.getDataSize()}byte`);
 });
 
 export const debug = false;
-
-qsAddEvent(".playStart", "click", () => {
-    pageManager.backLatestPage("playPrepare", { eventIgnore: true });
-    GameProcessing.start();
-});
-
-qsAddEvent("#resumeButton", "click", () => {
-    GameProcessing.game?.start();
-});
-
-//モード設定
-setupModeSetting();
-function setupModeSetting() {
-    qsAddEvent("button[data-mode]", "click", (element) => {
-        GameProcessing.playSetting.mode = +element.dataset.mode!;
-    });
-
-    qsAddEvent("button[data-player]", "click", (element) => {
-        GameProcessing.playSetting.playerNumber = +element.dataset.player!;
-    });
-}
 
 // localStorage.removeItem("Pentamond3-replayData");
 

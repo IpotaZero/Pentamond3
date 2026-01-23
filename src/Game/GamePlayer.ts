@@ -7,7 +7,6 @@ import { InformationLabelManager } from "./InformationLabelManager";
 import { TrickInfo } from "../Trick";
 import * as Setting from "../Settings";
 import { gameEvents } from "./GameMode";
-import { inputManager } from "../Interaction/InputManager";
 import { GraphicSetting } from "../GraphicSetting";
 
 export class GamePlayer {

@@ -1,6 +1,7 @@
 import { GamePlayer } from "../Game/GamePlayer";
-import { PlaySetting } from "./GameProcessing";
+import { PlaySetting } from "../BeforePlay";
 import { qsAll, qs } from "../Utils";
+import { Replay } from "../Replay/Replay";
 
 /**
  * ResultPageに関する、状態を持たない関数群
@@ -8,8 +9,33 @@ import { qsAll, qs } from "../Utils";
 export class ResultPageHandler {
     private static readonly parser = new DOMParser();
 
+    static setSaveButton() {
+        const saveButton = qs("#result .saveReplayButton");
+        saveButton.innerText = "リプレイを保存する";
+        saveButton.onclick = () => {
+            saveButton.innerText = "保存中……";
+
+            const succeed = Replay.saveLastOne();
+            if (succeed) {
+                Replay.setupSavedReplayPage();
+                saveButton.innerText = "保存しました";
+                saveButton.onclick = () => {};
+            } else {
+                saveButton.innerText = "リプレイを保存する";
+            }
+        };
+    }
+
+    static OverWriteTime(finishTime: number) {
+        qsAll(".resultLabel").forEach((resultLabel) => {
+            if (resultLabel.innerText.includes("Time")) {
+                resultLabel.innerText = `Time : ${(finishTime / 1000).toFixed(2)}`;
+            }
+        });
+    }
+
     //詳細結果の中身を作成する
-    static updateDetailedResultPage(players: GamePlayer[], playSetting: PlaySetting) {
+    static updateDetailedResultPage({ players, playSetting }: { players: GamePlayer[]; playSetting: PlaySetting }) {
         // 前の結果を消す
         qsAll("#detailedResult .subPage").forEach((subPage) => {
             subPage.remove();

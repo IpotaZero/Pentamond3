@@ -1,5 +1,4 @@
 import { EventId, EventManager } from "./EventManager";
-import { GamePlayer } from "./Game/GamePlayer";
 import { Input } from "./Interaction/Input";
 import { inputManager } from "./Interaction/InputManager";
 import { pageManager } from "./PageManager";
@@ -81,12 +80,20 @@ function addPageOperateEvent(id: string, input: Input) {
             return;
         }
 
+        // 何を行っている?
         if (id == "play") {
-            if (["KeyP", ...Setting.gamepadConfigPresets[0].pause].includes(latestKey)) {
+            const isPushPauseButton = ["KeyP", ...Setting.gamepadConfigPresets[0].pause].includes(latestKey);
+            if (isPushPauseButton) {
                 focusFlag = true;
                 operateWithInput();
-                if (GameProcessing.replay && (GameProcessing.players![0] as GamePlayer).loop.g$isLooping) {
-                    GameProcessing.game!.stop();
+
+                const currentGame = GameProcessing.currentGame;
+
+                if (!currentGame) throw new Error("ゲームが始められていないのにポーズされた。");
+
+                // currentGameの中身はできるだけprivateにしたいのでここら辺何とかしたい
+                if (GameProcessing.isReplay() && currentGame.players[0].loop.g$isLooping) {
+                    currentGame.game.stop();
                     pageManager.setPage("replayPause");
                 }
             }

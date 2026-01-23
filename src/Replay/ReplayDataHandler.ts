@@ -4,7 +4,7 @@ import { ReplayData } from "./Replay";
 
 import { qs } from "../Utils";
 import { replayDataDecryption, replayDataEncryption } from "./DataCompression";
-import { PlaySetting } from "../GameProcessing/GameProcessing";
+import { PlaySetting } from "../BeforePlay";
 
 export class ReplayDataHandler {
     static tempDataList: ReplayData[] = [];
@@ -23,29 +23,7 @@ export class ReplayDataHandler {
     }
 
     static createReplayData(players: GamePlayer[], game: GameMode, playSetting: PlaySetting) {
-        const convertOperateName = (operateName: OperateName) => {
-            return operateName == "put"
-                ? "ArrowUp"
-                : operateName == "move-left"
-                  ? "ArrowLeft"
-                  : operateName == "move-right"
-                    ? "ArrowRight"
-                    : operateName == "move-down"
-                      ? "ArrowDown"
-                      : operateName == "spin-left"
-                        ? "KeyC"
-                        : operateName == "spin-right"
-                          ? "KeyV"
-                          : operateName == "unput"
-                            ? "KeyB"
-                            : operateName == "hold"
-                              ? "Space"
-                              : operateName == "removeLine"
-                                ? "Enter"
-                                : "";
-        };
-
-        const inputData = game.operateMemories.map((operateMemory) => operateMemory.map(({ time, operateName }) => ({ time: time, keyCode: convertOperateName(operateName), type: "downup" })));
+        const inputData = game.operateMemories.map((operateMemory) => operateMemory.map(({ time, operateName }) => ({ time: time, keyCode: this.convertOperateName(operateName), type: "downup" })));
         const nextData = players.map((p) => p.operator.g$nextMemory);
         const finishTime = Math.max(...players.map((player) => player.playInfo.playTime));
         const finishPlayers = players.map((player, i) => (player.playInfo.playTime == finishTime ? i + 1 : -1)).filter((value) => value != -1);
@@ -62,6 +40,28 @@ export class ReplayDataHandler {
         }) as ReplayData;
 
         return replayData;
+    }
+
+    private static convertOperateName(operateName: OperateName) {
+        return operateName == "put"
+            ? "ArrowUp"
+            : operateName == "move-left"
+              ? "ArrowLeft"
+              : operateName == "move-right"
+                ? "ArrowRight"
+                : operateName == "move-down"
+                  ? "ArrowDown"
+                  : operateName == "spin-left"
+                    ? "KeyC"
+                    : operateName == "spin-right"
+                      ? "KeyV"
+                      : operateName == "unput"
+                        ? "KeyB"
+                        : operateName == "hold"
+                          ? "Space"
+                          : operateName == "removeLine"
+                            ? "Enter"
+                            : "";
     }
 
     static removeSavedReplayData(data: ReplayData) {

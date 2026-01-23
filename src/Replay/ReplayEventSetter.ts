@@ -1,3 +1,4 @@
+import { GameProcessing } from "../GameProcessing/GameProcessing";
 import { pageManager } from "../PageManager";
 import { qsAll, qs, sleep } from "../Utils";
 import { ReplayData, Replay } from "./Replay";
@@ -9,7 +10,7 @@ export class ReplayEventSetter {
             const replayButtons = qsAll("#replay .replayButton");
             const index = replayButtons.findIndex((button) => button == replayButton);
             // lastOperateTime = Date.now();
-            Replay.startReplay(tempDataList.at(-index - 1)!);
+            GameProcessing.startReplay(tempDataList.at(-index - 1)!);
         });
 
         saveButton.addEventListener("click", () => {
@@ -28,7 +29,7 @@ export class ReplayEventSetter {
         replayButtons.forEach((replayButton, i) => {
             replayButton.addEventListener("click", () => {
                 // lastOperateTime = Date.now();
-                Replay.startReplay(replayDataList[i]);
+                GameProcessing.startReplay(replayDataList[i]);
             });
         });
 
