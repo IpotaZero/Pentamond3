@@ -38,8 +38,8 @@ export class Replay {
         return ReplayDataHandler.getDataSize();
     }
 
-    static setupSavedReplayPage() {
-        const replayDataList = ReplayDataHandler.getReplayDataList();
+    static async setupSavedReplayPage() {
+        const replayDataList = await ReplayDataHandler.getReplayDataList();
 
         // Dom
         const buttons = ReplayDom.setupSavedReplayPage(replayDataList);

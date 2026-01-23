@@ -74,7 +74,7 @@ export const damageWaitingTime = 4000;
 export const damageGrace = 3;
 export const input = {
     repeatTime: 35,
-    delayTime: 165,
+    delayTime: 135,
 };
 //カウントが1減る時間(ms)
 export const gameTimeRate = 500;

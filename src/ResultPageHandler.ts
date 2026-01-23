@@ -1,7 +1,8 @@
-import { GamePlayer } from "../Game/GamePlayer";
-import { qsAll, qs } from "../Utils";
-import { Replay } from "../Replay/Replay";
-import { PlaySetting } from "../BeforePlaying/PlaySettingSetter";
+import { GamePlayer } from "./Game/GamePlayer";
+import { qsAll, qs, sleep } from "./Utils";
+import { Replay } from "./Replay/Replay";
+import { PlaySetting } from "./BeforePlaying/PlaySettingSetter";
+import { pageManager } from "./PageManager";
 
 /**
  * ResultPageに関する、状態を持たない関数群
@@ -9,19 +10,28 @@ import { PlaySetting } from "../BeforePlaying/PlaySettingSetter";
 export class ResultPageHandler {
     private static readonly parser = new DOMParser();
 
+    static setEvents() {
+        const saveButton = qs("#result .saveReplayButton");
+
+        pageManager.addEvent(["pageChanged-result"], () => {
+            saveButton.innerText = "リプレイを保存する";
+        });
+    }
+
     static setSaveButton() {
         const saveButton = qs("#result .saveReplayButton");
-        saveButton.innerText = "リプレイを保存する";
-        saveButton.onclick = () => {
+
+        saveButton.onclick = async () => {
             saveButton.innerText = "保存中……";
 
-            const succeed = Replay.saveLastOne();
+            await sleep(17);
+
+            const succeed = await Replay.saveLastOne();
             if (succeed) {
                 Replay.setupSavedReplayPage();
                 saveButton.innerText = "保存しました";
                 saveButton.onclick = () => {};
             } else {
-                saveButton.innerText = "リプレイを保存する";
             }
         };
     }

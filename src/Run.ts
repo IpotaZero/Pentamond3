@@ -10,6 +10,7 @@ import { ControllerRegisterer } from "./BeforePlaying/ControllerRegisterer";
 import { DeleteDataHandler } from "./DeleteDataHandler";
 import { GameStartEventSetter } from "./GameProcessing/GameStarter";
 import { PlaySettingSetter } from "./BeforePlaying/PlaySettingSetter";
+import { ResultPageHandler } from "./ResultPageHandler";
 
 //不正なページ遷移の防止
 setupInputBehavior();
@@ -45,6 +46,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     pageManager.init();
     inputManager.s$maxInputNumber = 1;
 
+    ResultPageHandler.setEvents();
     GameStartEventSetter.setEvents();
 
     // BeforePlaying

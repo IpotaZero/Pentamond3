@@ -6,7 +6,7 @@ import { pageManager } from "../PageManager";
 import { playBackground } from "../PlayBackground";
 import { Replay, ReplayData } from "../Replay/Replay";
 import { DisposableGame } from "./DisposableGame";
-import { ResultPageHandler } from "./ResultPageHandler";
+import { ResultPageHandler } from "../ResultPageHandler";
 import { countDown } from "./countDown";
 import { qs } from "../Utils";
 import { PlaySetting } from "../BeforePlaying/PlaySettingSetter";

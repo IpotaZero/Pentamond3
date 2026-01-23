@@ -1,3 +1,5 @@
+import LZString from "lz-string";
+
 import { GameMode, OperateName } from "../Game/GameMode";
 import { GamePlayer } from "../Game/GamePlayer";
 import { ReplayData } from "./Replay";
@@ -64,8 +66,8 @@ export class ReplayDataHandler {
                             : "";
     }
 
-    static removeSavedReplayData(data: ReplayData) {
-        const replayDataList = this.getReplayDataList();
+    static async removeSavedReplayData(data: ReplayData) {
+        const replayDataList = await this.getReplayDataList();
         const removedList = replayDataList.filter((value) => value.date != data.date);
         const encodedList = removedList.map((d) => replayDataEncryption(d));
         const json = JSON.stringify(encodedList);
@@ -73,27 +75,39 @@ export class ReplayDataHandler {
         localStorage.setItem("Pentamond3-replayData", json);
     }
 
-    static getReplayDataList(): ReplayData[] {
+    static async getReplayDataList(): Promise<ReplayData[]> {
         const json = localStorage.getItem("Pentamond3-replayData");
         const encodedList: string[] = json ? JSON.parse(json) : [];
-        const replayData = encodedList.map((encodedData) => replayDataDecryption(encodedData));
+        const replayData = await Promise.all(encodedList.map((encodedData) => replayDataDecryption(encodedData)));
 
         return replayData;
     }
 
-    static saveReplayData(data: ReplayData, { onOverMax, onError }: { onOverMax: () => void; onError: () => void }): boolean {
-        const replayDataList = ReplayDataHandler.getReplayDataList();
+    private static getDateList(): number[] {
+        const json = localStorage.getItem("Pentamond3-replayData");
+        const encodedList: string[] = json ? JSON.parse(json) : [];
+
+        return encodedList
+            .map((str) => LZString.decompressFromUTF16(str))
+            .map((str) => JSON.parse(str))
+            .map((obj) => obj.date);
+    }
+
+    static async saveReplayData(data: ReplayData, { onOverMax, onError }: { onOverMax: () => void; onError: () => void }): Promise<boolean> {
+        const dateList = this.getDateList();
 
         // 同じデータを保存しない
-        if (replayDataList.map((data) => data.date).includes(data.date)) {
+        if (dateList.includes(data.date)) {
             return false;
         }
 
         // 11件以上保存しない
-        if (replayDataList.length >= 10) {
+        if (dateList.length >= 10) {
             onOverMax();
             return false;
         }
+
+        const replayDataList = await this.getReplayDataList();
 
         // 降順に並べる
         replayDataList.push(data);
@@ -104,7 +118,7 @@ export class ReplayDataHandler {
             replayDataList.shift();
         }
 
-        const encodedList = replayDataList.map((data) => replayDataEncryption(data));
+        const encodedList = await Promise.all(replayDataList.map((data) => replayDataEncryption(data)));
         // dataArray.forEach((dataString) => {
         //     const data = replayDataDecryption(dataString);
         //     const now = new Date(data.date);
