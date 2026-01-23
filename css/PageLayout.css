@@ -552,7 +552,7 @@ button {
             background: #444;
         }
 
-        & .replayButtonContainer {
+        & .replayDataContainer {
             display: flex;
             align-items: center;
             justify-content: center;
