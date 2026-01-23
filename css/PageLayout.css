@@ -185,7 +185,7 @@ button {
     & .label {
         font-size: 7vh;
     }
-    & #lordingCircle {
+    & #loadingCircle {
         font-size: 13vh;
     }
 }

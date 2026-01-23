@@ -81,10 +81,10 @@
     animation-delay: 0;
     animation-direction: normal;
     animation-iteration-count: 1;
-    animation-name: lording;
+    animation-name: loading;
 }
 
-@keyframes lording {
+@keyframes loading {
     0% {
         padding-top: 2vh;
     }
@@ -93,16 +93,16 @@
     }
 }
 
-#lordingCircle {
+#loadingCircle {
     animation-duration: 500ms;
     animation-timing-function: linear;
     animation-delay: 0;
     animation-direction: normal;
     animation-iteration-count: infinite;
-    animation-name: lordingCircle;
+    animation-name: loadingCircle;
 }
 
-@keyframes lordingCircle {
+@keyframes loadingCircle {
     0% {
         transform: rotate(0deg);
         scale: 1;
