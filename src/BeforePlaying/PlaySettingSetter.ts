@@ -9,6 +9,9 @@ type EditablePlaySetting = {
     handy: readonly number[];
 };
 
+/**
+ * ゲームが始まる直前の人数とかルールとかを決める
+ */
 export class PlaySettingSetter {
     private static readonly playSetting: EditablePlaySetting = {
         playerNumber: 1,

@@ -7,7 +7,7 @@ import { debug } from "../Run";
 import { PlaySettingSetter } from "./PlaySettingSetter";
 
 /**
- * ゲームが始まる直前の人数とかルールとか決めたり、コントローラーの登録をしたりする
+ * コントローラーの登録をしたりする
  *  */
 export class ControllerRegisterer {
     static gamepadConfigs: Setting.GamepadConfig[] = [];
