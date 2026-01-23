@@ -4,12 +4,12 @@ import { Input } from "../Interaction/Input";
 import { inputManager } from "../Interaction/InputManager";
 import { pageManager } from "../PageManager";
 import { playBackground } from "../PlayBackground";
-import { PlaySetting } from "../BeforePlay";
 import { Replay, ReplayData } from "../Replay/Replay";
 import { DisposableGame } from "./DisposableGame";
 import { ResultPageHandler } from "./ResultPageHandler";
 import { countDown } from "./countDown";
 import { qs } from "../Utils";
+import { PlaySetting } from "../BeforePlaying/PlaySettingSetter";
 
 //ゲーム開始
 export class GameProcessing {

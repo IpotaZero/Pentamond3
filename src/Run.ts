@@ -6,7 +6,7 @@ import "./ScreenInteraction";
 import { Replay } from "./Replay/Replay";
 import { GraphicSetting } from "./GraphicSetting";
 import { soundsInit } from "./SoundProcessing";
-import { BeforePlay } from "./BeforePlay";
+import { ControllerRegisterer } from "./BeforePlaying/ControllerRegisterer";
 import { DeleteDataHandler } from "./DeleteDataHandler";
 import { GameStartEventSetter } from "./GameProcessing/GameStarter";
 
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     GameStartEventSetter.setEvents();
 
     //コントローラー登録
-    BeforePlay.setEvents();
+    ControllerRegisterer.setEvents();
 
     soundsInit();
 

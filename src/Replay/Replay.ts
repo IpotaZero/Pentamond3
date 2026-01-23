@@ -8,7 +8,7 @@ import { ReplayDom } from "./ReplayDom";
 import { ReplayDataHandler } from "./ReplayDataHandler";
 import { pageManager } from "../PageManager";
 import { ReplayEventSetter } from "./ReplayEventSetter";
-import { PlaySetting } from "../BeforePlay";
+import { PlaySetting } from "../BeforePlaying/PlaySettingSetter";
 
 //リプレイ
 export type ReplayData = {

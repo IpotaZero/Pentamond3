@@ -3,8 +3,8 @@ import { sleep } from "../Utils";
 import { GameMode } from "../Game/GameMode";
 import { GamePlayer } from "../Game/GamePlayer";
 import { Input } from "../Interaction/Input";
-import { PlaySetting } from "../BeforePlay";
 import { ReplayData } from "../Replay/Replay";
+import { PlaySetting } from "../BeforePlaying/PlaySettingSetter";
 
 /**
  * ゲームのセッティングから片付けまでやって捨てられるクラス
@@ -23,7 +23,7 @@ export class DisposableGame {
             this.replayData = replayData;
             this.playSetting = replayData.playSetting;
         } else if (playSetting) {
-            this.playSetting = structuredClone(playSetting);
+            this.playSetting = playSetting;
         } else {
             throw new Error("引数不足");
         }

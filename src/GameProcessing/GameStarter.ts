@@ -2,7 +2,7 @@ import { pageManager } from "../PageManager";
 import { qsAddEvent } from "../Utils";
 import { GameProcessing } from "./GameProcessing";
 import { inputManager } from "../Interaction/InputManager";
-import { BeforePlay } from "../BeforePlay";
+import { PlaySettingSetter } from "../BeforePlaying/PlaySettingSetter";
 
 export class GameStartEventSetter {
     static setEvents() {
@@ -13,7 +13,7 @@ export class GameStartEventSetter {
     private static normal() {
         // 「スタート!」
         qsAddEvent(".playStart", "click", () => {
-            GameProcessing.startNormal(BeforePlay.playSetting);
+            GameProcessing.startNormal(PlaySettingSetter.getPlaySetting());
         });
 
         // ポーズ画面の「もう一度」・リザルト画面の「もう一度」

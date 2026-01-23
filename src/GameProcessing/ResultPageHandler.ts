@@ -1,7 +1,7 @@
 import { GamePlayer } from "../Game/GamePlayer";
-import { PlaySetting } from "../BeforePlay";
 import { qsAll, qs } from "../Utils";
 import { Replay } from "../Replay/Replay";
+import { PlaySetting } from "../BeforePlaying/PlaySettingSetter";
 
 /**
  * ResultPageに関する、状態を持たない関数群
