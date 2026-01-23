@@ -16,6 +16,11 @@ export class DisposableGame {
     readonly playSetting: PlaySetting;
     readonly replayData?: ReplayData;
 
+    private isPlaying = true;
+    get g$isPlaying() {
+        return this.isPlaying;
+    }
+
     onFinished = () => {};
 
     constructor(gameModeList: (typeof GameMode)[], inputs: Input[], inputCount: number, { playSetting, replayData }: { playSetting?: PlaySetting; replayData?: ReplayData }) {
@@ -43,6 +48,7 @@ export class DisposableGame {
     quit() {
         this.game.stop();
         this.game.remove();
+        this.isPlaying = false;
     }
 
     appendPlayersTo(container: HTMLElement) {
@@ -66,6 +72,7 @@ export class DisposableGame {
 
         await sleep(1000);
         this.game.remove();
+        this.isPlaying = false;
         this.onFinished();
     }
 
