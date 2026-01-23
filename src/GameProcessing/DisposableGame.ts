@@ -1,11 +1,10 @@
-import { GameMode } from "../Game/GameMode";
+import { sleep } from "../Utils";
 
-import { ResultPageHandler } from "./ResultPageHandler";
-import { qs, sleep } from "../Utils";
-import { countDown } from "./countDown";
+import { GameProcessing } from "./GameProcessing";
+
+import { GameMode } from "../Game/GameMode";
 import { GamePlayer } from "../Game/GamePlayer";
 import { Input } from "../Interaction/Input";
-import { GameProcessing } from "./GameProcessing";
 import { PlaySetting } from "../BeforePlay";
 import { ReplayData } from "../Replay/Replay";
 
@@ -21,7 +20,7 @@ export class DisposableGame {
 
     onFinished = () => {};
 
-    constructor(inputs: Input[], inoutCount: number, { playSetting, replayData }: { playSetting?: PlaySetting; replayData?: ReplayData }) {
+    constructor(gameModeList: (typeof GameMode)[], inputs: Input[], inoutCount: number, { playSetting, replayData }: { playSetting?: PlaySetting; replayData?: ReplayData }) {
         if (replayData) {
             this.replayData = replayData;
             this.playSetting = replayData.playSetting;
@@ -34,17 +33,18 @@ export class DisposableGame {
         //登録されているinputをもとにplayersを作成する
         this.players = DisposableGame.createPlayers(this.playSetting.maxGameTime, inputs, inoutCount, { replayData: this.replayData });
 
-        // 画面にappend
-        const playContainer = qs("#play");
-        this.players.forEach((player) => {
-            playContainer.appendChild(player.g$element);
-        });
-
         // ゲームを作成
-        const CurrentMode = GameProcessing.ModeClassList[this.playSetting.mode - 1];
+        const CurrentMode = gameModeList[this.playSetting.mode - 1];
+        // @ts-ignore
         this.game = new CurrentMode(this.players);
         this.game.addEvent(["gameFinish"], async () => {
             await this.onGameFinish();
+        });
+    }
+
+    appendPlayersTo(container: HTMLElement) {
+        this.players.forEach((player) => {
+            container.appendChild(player.g$element);
         });
     }
 

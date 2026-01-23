@@ -1,6 +1,5 @@
 import { Mode1 } from "../Game/Modes/Mode1";
 import { Mode2 } from "../Game/Modes/Mode2";
-import { AutoKeyboardManager } from "../Interaction/AutoKeyboardManager";
 import { Input } from "../Interaction/Input";
 import { inputManager } from "../Interaction/InputManager";
 import { pageManager } from "../PageManager";
@@ -10,10 +9,11 @@ import { Replay, ReplayData } from "../Replay/Replay";
 import { DisposableGame } from "./DisposableGame";
 import { ResultPageHandler } from "./ResultPageHandler";
 import { countDown } from "./countDown";
+import { qs } from "../Utils";
 
 //ゲーム開始
 export class GameProcessing {
-    static readonly ModeClassList = [Mode1, Mode2];
+    private static readonly ModeClassList = [Mode1, Mode2];
 
     static currentGame: DisposableGame | null = null;
 
@@ -30,11 +30,20 @@ export class GameProcessing {
     static async startNormal(playSetting: PlaySetting) {
         this.beforeStart();
 
-        this.currentGame = new DisposableGame(inputManager.g$registeredInputs, inputManager.g$maxInputNumber, { playSetting });
+        this.currentGame = new DisposableGame(
+            this.ModeClassList,
+            inputManager.g$registeredInputs,
+            inputManager.g$maxInputNumber,
+
+            { playSetting }
+        );
 
         this.currentGame.onFinished = () => {
             this.onFinishNormal();
         };
+
+        // 画面にappend
+        this.currentGame.appendPlayersTo(qs("#play"));
 
         await this.countDownAndStart();
     }
@@ -56,11 +65,19 @@ export class GameProcessing {
             inputManager.register(input);
         }
 
-        this.currentGame = new DisposableGame(inputManager.g$registeredInputs, inputManager.g$maxInputNumber, { replayData });
+        this.currentGame = new DisposableGame(
+            this.ModeClassList,
+            inputManager.g$registeredInputs,
+            inputManager.g$maxInputNumber,
+
+            { replayData }
+        );
 
         this.currentGame.onFinished = () => {
             this.onFinishReplay();
         };
+
+        this.currentGame.appendPlayersTo(qs("#play"));
 
         await this.countDownAndStart();
 
