@@ -30,6 +30,7 @@ export class DeleteDataHandler {
         return new Blob([
             localStorage.getItem("Pentamond3-replayData") ?? "",
             localStorage.getItem("Pentamond3-graphicSetting") ?? "",
+            localStorage.getItem("Pentamond3-volumeSetting") ?? "",
             //
         ]).size;
     }
@@ -37,5 +38,6 @@ export class DeleteDataHandler {
     private static removeAllData() {
         localStorage.removeItem("Pentamond3-replayData");
         localStorage.removeItem("Pentamond3-graphicSetting");
+        localStorage.removeItem("Pentamond3-volumeSetting");
     }
 }

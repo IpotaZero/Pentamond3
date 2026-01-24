@@ -16,7 +16,7 @@ export class ReplayDataHandler {
 
         while (this.tempDataList.length > max) {
             this.tempDataList.shift();
-            qs("#replay .replayButtonContainer:first-child").remove();
+            qs("#replay .replayDataContainer:first-child").remove();
         }
     }
 
@@ -83,14 +83,14 @@ export class ReplayDataHandler {
         return replayData;
     }
 
-    private static getDateList(): number[] {
+    static getDateList(): number[] {
         const json = localStorage.getItem("Pentamond3-replayData");
         const encodedList: string[] = json ? JSON.parse(json) : [];
 
         return encodedList
             .map((str) => LZString.decompressFromUTF16(str))
             .map((str) => JSON.parse(str))
-            .map((obj) => obj.date);
+            .map((obj) => obj[6]);
     }
 
     static async saveReplayData(data: ReplayData, { onOverMax, onError }: { onOverMax: () => void; onError: () => void }): Promise<boolean> {

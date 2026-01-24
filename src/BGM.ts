@@ -156,6 +156,10 @@ export class BGM {
         this.gain.gain.value = this.volume * this.sourceVolume;
     }
 
+    static getVolume(): number {
+        return this.volume;
+    }
+
     // AudioBufferを反転させる（逆再生用）
     private static reverseBuffer(buffer: AudioBuffer) {
         const reversedBuffer = this.context.createBuffer(buffer.numberOfChannels, buffer.length, buffer.sampleRate);

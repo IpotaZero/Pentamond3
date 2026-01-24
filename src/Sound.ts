@@ -39,6 +39,11 @@ export class Sound {
         this.gain.gain.value = volume;
     }
 
+    static getWholeVolume(): number {
+        Sound.checkInit();
+        return this.gain.gain.value;
+    }
+
     constructor({ src, volume = 0.4 }: { src: string; volume?: number }) {
         Sound.checkInit();
 

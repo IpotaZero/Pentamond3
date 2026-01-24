@@ -9,6 +9,7 @@ import { ReplayDataHandler } from "./ReplayDataHandler";
 import { pageManager } from "../PageManager";
 import { ReplayEventSetter } from "./ReplayEventSetter";
 import { PlaySetting } from "../BeforePlaying/PlaySettingSetter";
+import { qsAll } from "../Utils";
 
 //リプレイ
 export type ReplayData = {
@@ -65,6 +66,19 @@ export class Replay {
             onError: () => {
                 pageManager.setPage("replaySaveAlert2");
             },
+        });
+    }
+
+    static updateTempReplaySaveButton() {
+        const dateList = ReplayDataHandler.getDateList();
+        const saveButtons = qsAll("#replay .replaySaveButton");
+
+        saveButtons.forEach((saveButton) => {
+            const index = saveButtons.findIndex((button) => button == saveButton);
+            const replayData = ReplayDataHandler.tempDataList.at(-index - 1)!;
+            if (dateList.includes(replayData.date)) {
+                saveButton.classList.add("replaySavedButton");
+            }
         });
     }
 

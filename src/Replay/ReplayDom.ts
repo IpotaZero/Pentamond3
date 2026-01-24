@@ -7,7 +7,7 @@ export class ReplayDom {
 
     static setupSavedReplayPage(replayDataList: ReplayData[]) {
         const container = qs("#savedReplay .options");
-        container.querySelectorAll(".replayButtonContainer").forEach((element) => {
+        container.querySelectorAll(".replayDataContainer").forEach((element) => {
             element.remove();
         });
 
@@ -62,9 +62,10 @@ export class ReplayDom {
 
     private static getDateString(now: Date) {
         const hour = `${now.getHours()}`;
+        const month = `${now.getMonth() + 1}`;
 
         return `
-            ${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}
+            ${now.getFullYear()}/${month.length === 1 ? "0" + month : month}/${now.getDate()}
             ${hour.length === 1 ? "&nbsp;&nbsp;&nbsp;" + hour : hour} :
             ${now.getMinutes() < 10 ? "0" + now.getMinutes() : now.getMinutes()} :
             ${now.getSeconds() < 10 ? "0" + now.getSeconds() : now.getSeconds()}
@@ -104,7 +105,7 @@ export class ReplayDom {
 
         //リプレイボタンの追加
         const replayContainer = document.createElement("div");
-        replayContainer.classList = "replayButtonContainer";
+        replayContainer.classList = "replayDataContainer";
         replayContainer.appendChild(replayButton);
         replayContainer.appendChild(saveButton);
         replayContainer.querySelectorAll("button").forEach((button) => {

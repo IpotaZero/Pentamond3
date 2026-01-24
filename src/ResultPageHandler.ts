@@ -29,6 +29,7 @@ export class ResultPageHandler {
             const succeed = await Replay.saveLastOne();
             if (succeed) {
                 Replay.setupSavedReplayPage();
+                Replay.updateTempReplaySaveButton();
                 saveButton.innerText = "保存しました";
                 saveButton.onclick = () => {};
             }

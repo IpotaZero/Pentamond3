@@ -180,7 +180,7 @@ button {
 }
 
 #invalidPanel {
-    background-color: #eea;
+    background-color: #aaa0;
     z-index: 100;
     & .label {
         font-size: 7vh;
@@ -457,7 +457,7 @@ button {
         justify-content: start;
         border: 1vh #5acd solid;
         &::-webkit-scrollbar {
-            width: 4vh;
+            width: 3.5vh;
         }
 
         &::-webkit-scrollbar-track {
@@ -475,13 +475,13 @@ button {
             background: #444;
         }
 
-        & .replayButtonContainer {
+        & .replayDataContainer {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 5vh;
             & .replayButton {
-                font-size: 5vh;
+                font-size: 4.5vh;
             }
             & .replaySaveButton {
                 height: 7vh;
@@ -535,7 +535,7 @@ button {
         justify-content: start;
         border: 1vh #5acd solid;
         &::-webkit-scrollbar {
-            width: 4vh;
+            width: 3.5vh;
         }
 
         &::-webkit-scrollbar-track {
@@ -557,9 +557,9 @@ button {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 3vh;
+            gap: 2vh;
             & .replayButton {
-                font-size: 5vh;
+                font-size: 4.5vh;
                 margin-left: -10vh;
             }
             & .replayDataDescription {
