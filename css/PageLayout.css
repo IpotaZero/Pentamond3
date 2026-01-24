@@ -185,7 +185,7 @@ button {
     & .label {
         font-size: 7vh;
     }
-    & #lordingCircle {
+    & #loadingCircle {
         font-size: 13vh;
     }
 }
@@ -552,7 +552,7 @@ button {
             background: #444;
         }
 
-        & .replayButtonContainer {
+        & .replayDataContainer {
             display: flex;
             align-items: center;
             justify-content: center;

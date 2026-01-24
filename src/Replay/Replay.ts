@@ -1,5 +1,5 @@
 import { BlockKind } from "../BlockOperate/Block";
-import { AutoKeyboardInputData, AutoKeyboardManager } from "../Interaction/AutoKeyboardManager";
+import { AutoKeyboardInputData } from "../Interaction/AutoKeyboardManager";
 import * as Setting from "../Settings";
 import { GamePlayer } from "../Game/GamePlayer";
 import { GameMode } from "../Game/GameMode";
@@ -7,10 +7,8 @@ import { GameMode } from "../Game/GameMode";
 import { ReplayDom } from "./ReplayDom";
 import { ReplayDataHandler } from "./ReplayDataHandler";
 import { pageManager } from "../PageManager";
-import { GameProcessing, PlaySetting } from "../GameProcessing";
-import { Input } from "../Interaction/Input";
-import { inputManager } from "../Interaction/InputManager";
 import { ReplayEventSetter } from "./ReplayEventSetter";
+import { PlaySetting } from "../BeforePlaying/PlaySettingSetter";
 
 //リプレイ
 export type ReplayData = {
@@ -40,32 +38,8 @@ export class Replay {
         return ReplayDataHandler.getDataSize();
     }
 
-    static startReplay(data: ReplayData) {
-        const readingReplayData = data;
-        const playSetting = window.structuredClone(readingReplayData.playSetting);
-
-        GameProcessing.playSetting = playSetting;
-        GameProcessing.replay = true;
-        GameProcessing.readingReplayData = readingReplayData;
-
-        inputManager.removeVirtualInputs();
-        inputManager.resetRegister();
-        inputManager.s$maxInputNumber = readingReplayData.playSetting.playerNumber;
-
-        const inputs = Array.from({ length: readingReplayData.playSetting.playerNumber }, () => new Input("autoKeyboard"));
-        inputs.forEach((input, i) => {
-            if (!(input.g$manager instanceof AutoKeyboardManager)) {
-                return;
-            }
-            input.g$manager.s$inputData = readingReplayData!.inputData[i];
-            inputManager.register(input);
-        });
-
-        GameProcessing.start();
-    }
-
-    static setupSavedReplayPage() {
-        const replayDataList = ReplayDataHandler.getReplayDataList();
+    static async setupSavedReplayPage() {
+        const replayDataList = await ReplayDataHandler.getReplayDataList();
 
         // Dom
         const buttons = ReplayDom.setupSavedReplayPage(replayDataList);
@@ -74,7 +48,7 @@ export class Replay {
         ReplayEventSetter.setSavedReplayPageEvent(replayDataList, buttons);
     }
 
-    static addTempData(players: GamePlayer[], game: GameMode, playSetting: PlaySetting) {
+    static addTempData({ players, game, playSetting }: { players: GamePlayer[]; game: GameMode; playSetting: PlaySetting }) {
         const replayData = ReplayDataHandler.createReplayData(players, game, playSetting);
 
         ReplayDataHandler.addTempData(replayData, Setting.maximumTemporaryReplaySavable);

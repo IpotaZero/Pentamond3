@@ -15,7 +15,7 @@ const keyCodes = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "KeyC", "Ke
 const blockKinds = ["L", "J", "p", "q", "U", "I"];
 const numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g"];
 
-export function replayDataEncryption(data: ReplayData): string {
+export async function replayDataEncryption(data: ReplayData): Promise<string> {
     const inputData = data.inputData.map((playerInputData) =>
         playerInputData
             .map((input, i) => {
@@ -38,7 +38,7 @@ export function replayDataEncryption(data: ReplayData): string {
     return data2;
 }
 
-export function replayDataDecryption(encryptedData: string): ReplayData {
+export async function replayDataDecryption(encryptedData: string): Promise<ReplayData> {
     const objectData = JSON.parse(LZString.decompressFromUTF16(encryptedData));
     const inputData = objectData[0]
         .map((playerInputData: string) => {

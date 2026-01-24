@@ -191,7 +191,7 @@ export class PageManager implements MyEventListener {
             if (nextLayer == currentLayer) {
                 nextDisplayingPages = nextDisplayingPages.filter((page) => page.id != this.currentPage!.id);
             } else if (nextLayer < currentLayer) {
-                throw new Error("現在のlayerを下回るlayerのページには遷移できません");
+                throw new Error(`現在のlayerを下回るlayerのページには遷移できません: ${pageId}`);
             }
         }
         nextDisplayingPages.push(nextPage);

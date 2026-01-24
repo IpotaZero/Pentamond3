@@ -1,3 +1,4 @@
+import { GameProcessing } from "../GameProcessing/GameProcessing";
 import { pageManager } from "../PageManager";
 import { qsAll, qs, sleep } from "../Utils";
 import { ReplayData, Replay } from "./Replay";
@@ -9,15 +10,16 @@ export class ReplayEventSetter {
             const replayButtons = qsAll("#replay .replayButton");
             const index = replayButtons.findIndex((button) => button == replayButton);
             // lastOperateTime = Date.now();
-            Replay.startReplay(tempDataList.at(-index - 1)!);
+            GameProcessing.startReplay(tempDataList.at(-index - 1)!);
         });
 
-        saveButton.addEventListener("click", () => {
+        saveButton.addEventListener("click", async () => {
             const saveButtons = qsAll("#replay .replaySaveButton");
             const index = saveButtons.findIndex((button) => button == saveButton);
 
             // lastOperateTime = Date.now();
-            if (Replay.save(tempDataList.at(-index - 1)!)) {
+            const succeed = await Replay.save(tempDataList.at(-index - 1)!);
+            if (succeed) {
                 Replay.setupSavedReplayPage();
                 saveButton.classList.add("replaySavedButton");
             }
@@ -28,7 +30,7 @@ export class ReplayEventSetter {
         replayButtons.forEach((replayButton, i) => {
             replayButton.addEventListener("click", () => {
                 // lastOperateTime = Date.now();
-                Replay.startReplay(replayDataList[i]);
+                GameProcessing.startReplay(replayDataList[i]);
             });
         });
 
@@ -43,15 +45,15 @@ export class ReplayEventSetter {
         const approved = await this.checkApprove();
         if (!approved) return;
 
+        const index = ReplayDataHandler.tempDataList.findIndex((data) => data.date == replayData.date);
+        qsAll(".replaySaveButton")[ReplayDataHandler.tempDataList.length - index - 1]?.classList.remove("replaySavedButton");
+
         // lastOperateTime = Date.now();
-        ReplayDataHandler.removeSavedReplayData(replayData);
+        await ReplayDataHandler.removeSavedReplayData(replayData);
 
         pageManager.backPages(2, { eventIgnore: true });
 
-        Replay.setupSavedReplayPage();
-
-        const index = ReplayDataHandler.tempDataList.findIndex((data) => data.date == replayData.date);
-        qsAll(".replaySaveButton")[ReplayDataHandler.tempDataList.length - index - 1]?.classList.remove("replaySavedButton");
+        await Replay.setupSavedReplayPage();
 
         pageManager.setPage("savedReplay");
     }

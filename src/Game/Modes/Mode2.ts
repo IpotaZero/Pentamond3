@@ -2,11 +2,11 @@ import { EventManager } from "../../EventManager";
 import { gameEvents, GameMode } from "../GameMode";
 import { GamePlayer } from "../GamePlayer";
 import { pageManager } from "../../PageManager";
-import { gamepadConfigs } from "../../Run";
 import * as Setting from "../../Settings";
 import { qsAll, removeMousePointerTemporary } from "../../Utils";
 import { playBackground } from "../../PlayBackground";
 import { GraphicSetting } from "../../GraphicSetting";
+import { ControllerRegisterer } from "../../BeforePlaying/ControllerRegisterer";
 
 export class Mode2 extends GameMode {
     constructor(players: GamePlayer[]) {
@@ -74,25 +74,25 @@ export class Mode2 extends GameMode {
         const p = this.players[index];
         const input = p.input.g$manager;
         const operate = (keyCode: string) => {
-            if (["ArrowLeft", ...gamepadConfigs[index].moveLeft].includes(keyCode)) {
+            if (["ArrowLeft", ...ControllerRegisterer.gamepadConfigs[index].moveLeft].includes(keyCode)) {
                 p.operator.move("left");
-            } else if (["ArrowRight", ...gamepadConfigs[index].moveRight].includes(keyCode)) {
+            } else if (["ArrowRight", ...ControllerRegisterer.gamepadConfigs[index].moveRight].includes(keyCode)) {
                 p.operator.move("right");
-            } else if (["ArrowDown", ...gamepadConfigs[index].moveDown].includes(keyCode)) {
+            } else if (["ArrowDown", ...ControllerRegisterer.gamepadConfigs[index].moveDown].includes(keyCode)) {
                 p.operator.move("down");
-            } else if (["ArrowUp", ...gamepadConfigs[index].put].includes(keyCode)) {
+            } else if (["ArrowUp", ...ControllerRegisterer.gamepadConfigs[index].put].includes(keyCode)) {
                 p.operator.put();
-            } else if (["KeyC", ...gamepadConfigs[index].spinLeft].includes(keyCode)) {
+            } else if (["KeyC", ...ControllerRegisterer.gamepadConfigs[index].spinLeft].includes(keyCode)) {
                 p.operator.spin("left");
-            } else if (["KeyV", ...gamepadConfigs[index].spinRight].includes(keyCode)) {
+            } else if (["KeyV", ...ControllerRegisterer.gamepadConfigs[index].spinRight].includes(keyCode)) {
                 p.operator.spin("right");
-            } else if (["KeyB", ...gamepadConfigs[index].unput].includes(keyCode)) {
+            } else if (["KeyB", ...ControllerRegisterer.gamepadConfigs[index].unput].includes(keyCode)) {
                 p.operator.unput();
-            } else if (["Space", ...gamepadConfigs[index].hold].includes(keyCode)) {
+            } else if (["Space", ...ControllerRegisterer.gamepadConfigs[index].hold].includes(keyCode)) {
                 p.operator.hold();
-            } else if (["Enter", ...gamepadConfigs[index].removeLine].includes(keyCode)) {
+            } else if (["Enter", ...ControllerRegisterer.gamepadConfigs[index].removeLine].includes(keyCode)) {
                 p.operator.removeLine();
-            } else if (["KeyP", ...gamepadConfigs[index].pause].includes(keyCode)) {
+            } else if (["KeyP", ...ControllerRegisterer.gamepadConfigs[index].pause].includes(keyCode)) {
                 if (!p.loop.g$isLooping || this.state.hasFinished) {
                     return;
                 }
@@ -127,7 +127,14 @@ export class Mode2 extends GameMode {
             }),
 
             p.loop.addEvent(["loop"], () => {
-                const moveKeys = ["ArrowLeft", "ArrowRight", "ArrowDown", ...gamepadConfigs[index].moveLeft, ...gamepadConfigs[index].moveRight, ...gamepadConfigs[index].moveDown];
+                const moveKeys = [
+                    "ArrowLeft",
+                    "ArrowRight",
+                    "ArrowDown",
+                    ...ControllerRegisterer.gamepadConfigs[index].moveLeft,
+                    ...ControllerRegisterer.gamepadConfigs[index].moveRight,
+                    ...ControllerRegisterer.gamepadConfigs[index].moveDown,
+                ];
                 const latestKey = input.getLatestPressingKey(moveKeys);
                 const pressTime = Date.now() - input.getPressTime(latestKey);
                 if (pressTime >= Setting.input.delayTime && latestKey != "") {

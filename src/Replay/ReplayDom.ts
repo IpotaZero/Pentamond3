@@ -3,6 +3,8 @@ import { qs, qsAll } from "../Utils";
 import { ReplayData } from "./Replay";
 
 export class ReplayDom {
+    private static readonly parser = new DOMParser();
+
     static setupSavedReplayPage(replayDataList: ReplayData[]) {
         const container = qs("#savedReplay .options");
         container.querySelectorAll(".replayButtonContainer").forEach((element) => {
@@ -40,27 +42,33 @@ export class ReplayDom {
     }
 
     private static createReplayDataContainer(replayData: ReplayData) {
-        const replayDataContainer = document.createElement("div");
-
         const now = new Date(replayData.date);
-        const replayButton = document.createElement("button");
-        replayButton.classList.add("replayButton");
-        replayButton.innerHTML = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${now.getMinutes() < 10 ? "0" + now.getMinutes() : now.getMinutes()}:${
-            now.getSeconds() < 10 ? "0" + now.getSeconds() : now.getSeconds()
-        }`;
 
-        const replayDataDescription = document.createElement("div");
-        replayDataDescription.classList.add("replayDataDescription");
-        replayDataDescription.innerHTML = this.createReplayDataDescription(replayData);
+        const html = `
+            <div class="replayDataContainer">
+                <button class="replayButton">${this.getDateString(now)}</button>
+                <div class="replayDataDescription">${this.createReplayDataDescription(replayData)}</div>
+                <button class="replayDeleteButton"></button>
+            </div>
+        `;
 
-        const deleteButton = document.createElement("button");
-        deleteButton.classList.add("replayDeleteButton");
+        const replayDataContainer = this.parser.parseFromString(html, "text/html").body.firstElementChild!;
 
-        replayDataContainer.appendChild(replayButton);
-        replayDataContainer.appendChild(replayDataDescription);
-        replayDataContainer.appendChild(deleteButton);
+        const replayButton = replayDataContainer.querySelector(".replayButton") as HTMLButtonElement;
+        const deleteButton = replayDataContainer.querySelector(".replayDeleteButton") as HTMLButtonElement;
 
         return { replayButton, deleteButton, replayDataContainer };
+    }
+
+    private static getDateString(now: Date) {
+        const hour = `${now.getHours()}`;
+
+        return `
+            ${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}
+            ${hour.length === 1 ? "&nbsp;&nbsp;&nbsp;" + hour : hour} :
+            ${now.getMinutes() < 10 ? "0" + now.getMinutes() : now.getMinutes()} :
+            ${now.getSeconds() < 10 ? "0" + now.getSeconds() : now.getSeconds()}
+        `;
     }
 
     private static createReplayDataDescription(replayData: ReplayData) {
