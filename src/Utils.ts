@@ -153,6 +153,9 @@ function getMinElement(array: { element: any; value: number }[]) {
     return result;
 }
 
+/**
+ * ポインターを一時的に隠す。動かしたら表示する。
+ */
 function removeMousePointerTemporary() {
     if (document.body.style.cursor != "none") {
         document.body.style.cursor = "none";
