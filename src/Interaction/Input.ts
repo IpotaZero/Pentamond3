@@ -4,8 +4,10 @@ import { KeyboardManager } from "./KeyboardManager";
 
 type InputType = "keyboard" | "gamepad" | "autoKeyboard";
 
+export type OperateManager = KeyboardManager | GamepadManager | AutoKeyboardManager;
+
 export class Input {
-    private manager: KeyboardManager | GamepadManager | AutoKeyboardManager;
+    private manager: OperateManager;
     private type: InputType;
     private index: number;
     constructor(type: InputType = "keyboard", index = 0) {
