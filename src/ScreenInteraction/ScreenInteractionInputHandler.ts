@@ -1,7 +1,6 @@
 import { EventId, EventManager } from "../EventManager";
 import { Input } from "../Interaction/Input";
 import { inputManager } from "../Interaction/InputManager";
-import { pageManager } from "../PageManager";
 
 export class ScreenInteractionInputHandler {
     private registeredInputList: Input[] = [];
@@ -24,7 +23,6 @@ export class ScreenInteractionInputHandler {
                 return;
             }
 
-            const pageId = pageManager.g$currentPageId ?? "pageStart";
             this.registerInput(addedInput);
         });
     }
@@ -40,11 +38,21 @@ export class ScreenInteractionInputHandler {
     }
 
     /**
+     * AutoではないInputを登録する
+     */
+    registerNonAutoInputs() {
+        inputManager.g$inputs.forEach((input) => {
+            if (input.isAuto()) return;
+            this.registerInput(input);
+        });
+    }
+
+    /**
      * 指定したページを操作するEventを指定したinputに追加する
      * @param pageId ページのid
      * @param input Eventを追加するinput
      */
-    registerInput(input: Input): void {
+    private registerInput(input: Input): void {
         // すでに登録されているならリターン
         if (this.registeredInputList.includes(input)) return;
         this.registeredInputList.push(input);

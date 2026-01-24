@@ -109,10 +109,7 @@ class ScreenInteraction implements MyEventListener {
         await sleep(Setting.debounceOperateTime * 2.5);
 
         // イベントの追加
-        inputManager.g$inputs.forEach((input) => {
-            if (input.isAuto()) return;
-            this.inputHandler.registerInput(input);
-        });
+        this.inputHandler.registerNonAutoInputs();
 
         // mappingが設定されたElementを更新
         this.view.updateMappedElementList(pageId);
