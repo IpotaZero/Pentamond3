@@ -1,4 +1,4 @@
-import { screenInteraction } from "../ScreenInteraction";
+import { screenInteraction } from "../ScreenInteraction/ScreenInteraction";
 import { qs, qsAll } from "../Utils";
 import { ReplayData } from "./Replay";
 

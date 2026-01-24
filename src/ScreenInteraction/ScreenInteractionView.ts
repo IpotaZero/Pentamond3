@@ -1,5 +1,5 @@
 import { MappedElement } from "./ScreenInteraction";
-import { qsAddEvent, qsAll, qs, getMinElement } from "./Utils";
+import { qsAddEvent, qsAll, qs, getMinElement } from "../Utils";
 
 export class ScreenInteractionView {
     focusOnPageChange = false;

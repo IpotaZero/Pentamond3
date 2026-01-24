@@ -1,8 +1,8 @@
-import { EventManager } from "./EventManager";
+import { EventManager } from "../EventManager";
 import { ScreenInteractionView } from "./ScreenInteractionView";
-import { qsAddEvent, removeMousePointerTemporary, qs } from "./Utils";
-import * as Setting from "./Settings";
-import { pageManager } from "./PageManager";
+import { qsAddEvent, removeMousePointerTemporary, qs } from "../Utils";
+import * as Setting from "../Settings";
+import { pageManager } from "../PageManager";
 
 export class ScreenInteractionOperationRunner {
     private lastOperateTime = 0;

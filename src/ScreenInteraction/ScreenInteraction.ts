@@ -1,9 +1,9 @@
-import { EventId, EventManager, MyEventListener } from "./EventManager";
-import { inputManager } from "./Interaction/InputManager";
-import { pageManager } from "./PageManager";
-import { sleep, qs } from "./Utils";
-import * as Setting from "./Settings";
-import { GameProcessing } from "./GameProcessing/GameProcessing";
+import { EventId, EventManager, MyEventListener } from "../EventManager";
+import { inputManager } from "../Interaction/InputManager";
+import { pageManager } from "../PageManager";
+import { sleep, qs } from "../Utils";
+import * as Setting from "../Settings";
+import { GameProcessing } from "../GameProcessing/GameProcessing";
 import { ScreenInteractionView } from "./ScreenInteractionView";
 import { ScreenInteractionInputHandler } from "./ScreenInteractionInputHandler";
 import { ScreenInteractionOperationRunner } from "./ScreenInteractionOperationRunner";

@@ -1,7 +1,7 @@
-import { EventId, EventManager } from "./EventManager";
-import { Input } from "./Interaction/Input";
-import { inputManager } from "./Interaction/InputManager";
-import { pageManager } from "./PageManager";
+import { EventId, EventManager } from "../EventManager";
+import { Input } from "../Interaction/Input";
+import { inputManager } from "../Interaction/InputManager";
+import { pageManager } from "../PageManager";
 
 export class ScreenInteractionInputHandler {
     private registeredInputList: Input[] = [];
