@@ -1,7 +1,7 @@
 import { BGM } from "./BGM";
 import { flagManager } from "./FlagManager";
 import { pageManager } from "./PageManager";
-import { screenInteraction } from "./ScreenInteraction";
+import { screenInteraction } from "./ScreenInteraction/ScreenInteraction";
 import { Sound } from "./Sound";
 import { qsAddEvent } from "./Utils";
 

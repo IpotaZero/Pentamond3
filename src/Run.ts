@@ -2,7 +2,7 @@ import { pageManager } from "./PageManager";
 import { Sound } from "./Sound";
 import { qs, qsAddEvent, qsAll, sleep } from "./Utils";
 import { inputManager } from "./Interaction/InputManager";
-import "./ScreenInteraction";
+import "./ScreenInteraction/ScreenInteraction";
 import { Replay } from "./Replay/Replay";
 import { GraphicSetting } from "./GraphicSetting";
 import { soundsInit } from "./SoundProcessing";
