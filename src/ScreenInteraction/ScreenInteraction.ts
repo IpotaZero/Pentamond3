@@ -43,6 +43,10 @@ class ScreenInteraction implements MyEventListener {
         this.setEvents();
     }
 
+    setHoverHighlight(button: HTMLElement) {
+        this.view.setHoverHighlight(button);
+    }
+
     areOperated(interactions: string[]) {
         return this.inputHandler.areOperated(interactions);
     }

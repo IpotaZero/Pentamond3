@@ -104,7 +104,7 @@ export class ScreenInteractionView {
         return target;
     }
 
-    private setHoverHighlight(button: HTMLElement): void {
+    setHoverHighlight(button: HTMLElement): void {
         button.addEventListener("mouseover", () => {
             button.focus();
         });
