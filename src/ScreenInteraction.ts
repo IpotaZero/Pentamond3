@@ -1,26 +1,28 @@
 import { EventId, EventManager, MyEventListener } from "./EventManager";
-import { Input } from "./Interaction/Input";
+import { Input, OperateManager } from "./Interaction/Input";
 import { inputManager } from "./Interaction/InputManager";
 import { pageManager } from "./PageManager";
 import { sleep, qs, qsAll, getMinElement, removeMousePointerTemporary, qsAddEvent } from "./Utils";
 import * as Setting from "./Settings";
 import { GameProcessing } from "./GameProcessing/GameProcessing";
+import { ScreenInteractionView } from "./ScreenInteractionView";
 
-type MappedElement = {
+export type MappedElement = {
     element: HTMLElement;
     coordinate: [number, number];
 };
 
 //画面のinputによる操作
 class ScreenInteraction implements MyEventListener {
-    private listeningInputs: Input[] = [];
-    private pageOperateEvents: EventId[] = [];
-    private operable: boolean = true;
-    private focusFlag = false;
-    private lastOperateTime = 0;
-    /**現在のページのMappedElements */
-    private currentMappedElements: MappedElement[] = [];
     private static instance: ScreenInteraction;
+
+    private operable: boolean = true;
+
+    private registeredInputList: Input[] = [];
+    private pageOperateEvents: EventId[] = [];
+
+    private lastOperateTime = 0;
+    private readonly view = new ScreenInteractionView();
 
     /**
      * @param interaction すべての操作
@@ -36,8 +38,10 @@ class ScreenInteraction implements MyEventListener {
         if (ScreenInteraction.instance) {
             return ScreenInteraction.instance;
         }
+
         ScreenInteraction.instance = this;
-        this.addInteractionEvents();
+
+        this.setEvents();
     }
 
     set s$operable(operable: boolean) {
@@ -48,7 +52,7 @@ class ScreenInteraction implements MyEventListener {
      * 次のページ変更時に何かをあらかじめfocusするか
      */
     set s$focusFlag(focusFlag: boolean) {
-        this.focusFlag = focusFlag;
+        this.view.focusOnPageChange = focusFlag;
     }
 
     get g$lastOperateTime() {
@@ -56,89 +60,67 @@ class ScreenInteraction implements MyEventListener {
     }
 
     get g$listeningInputs(): readonly Input[] {
-        return this.listeningInputs.map((input) => input);
+        return this.registeredInputList.map((input) => input);
     }
 
     get g$selectedElement(): MappedElement | null {
-        return this.currentMappedElements.find(({ element: option }) => option == document.activeElement) ?? null;
+        return this.view.getFocusedElement();
     }
 
-    private addInteractionEvents() {
-        //ページ変更ごとにそのページを操作できるイベントをinputに追加する
+    private hasSet = false;
+    private setEvents() {
+        if (this.hasSet) throw new Error("既にsetされている!");
+        this.hasSet = true;
+
+        // ページ変更ごとにそのページを操作できるイベントをinputに追加する
         pageManager.addEvent(["pageChanged"], () => {
-            this.onPageChanged();
+            this.updatePageOperateEvent();
         });
 
-        this.setupDataMapping();
-
-        //途中追加されたinputにイベントの追加
-        inputManager.addEvent(["inputAdded"], () => {
-            const latestInput = inputManager.g$inputs.at(-1)!;
-            if (latestInput.isAuto()) {
-                return;
-            }
-            this.addPageOperateEvent(pageManager.g$currentPageId ?? "pageStart", latestInput);
-        });
-    }
-
-    private setupDataMapping() {
-        //マウス操作との整合
-        qsAll("[data-mapping]")
-            .filter((e) => e instanceof HTMLElement)
-            .forEach((button) => {
-                this.setHoverHighlight(button);
-            });
-
-        //input要素を触った後にそれを含む要素にfocusさせる
-        qsAll(".rangeContainer[data-mapping]").forEach((container) => {
-            container.querySelectorAll("input").forEach((element) => {
-                element.addEventListener("click", () => {
-                    container.focus();
-                });
-            });
-        });
-
-        //最後にclickを行った時間の更新
         qsAddEvent("[data-mapping]", "click", () => {
+            // 最後にclickを行った時間の更新
             this.lastOperateTime = Date.now();
         });
+
+        this.view.setupMouseOperation();
+        this.view.setupRangeOperation();
+
+        // 途中追加されたinputにイベントを追加
+        inputManager.addEvent(["inputAdded"], () => {
+            const addedInput = inputManager.g$inputs.at(-1)!;
+
+            if (addedInput.isAuto()) {
+                return;
+            }
+
+            this.addPageOperateEventAndInput(pageManager.g$currentPageId ?? "pageStart", addedInput);
+        });
     }
 
-    private async onPageChanged() {
-        const id = pageManager.g$currentPageId;
-        if (!id) return;
+    private async updatePageOperateEvent() {
+        // ページが開かれていなかったらリターン
+        const pageId = pageManager.g$currentPageId;
+        if (!pageId) return;
 
-        this.shiftFocusElement(id);
+        // フォーカスを新しいページに移動
+        this.view.shiftFocusTo(pageId);
 
-        //情報を更新する
+        // イベントを削除
         EventManager.removeEvents(this.pageOperateEvents);
-        this.pageOperateEvents.length = 0;
-        this.listeningInputs.length = 0;
+        this.pageOperateEvents = [];
+        this.registeredInputList = [];
 
         //早すぎるページ遷移の禁止
         await sleep(Setting.debounceOperateTime * 2.5);
 
-        //イベントの追加
+        // イベントの追加
         inputManager.g$inputs.forEach((input) => {
             if (input.isAuto()) return;
-
-            this.addPageOperateEvent(id, input);
+            this.addPageOperateEventAndInput(pageId, input);
         });
 
-        //mappingが設定されたElementを取得
-        this.currentMappedElements = this.createMappedElements(id);
-    }
-
-    private shiftFocusElement(id: string) {
-        if (document.activeElement instanceof HTMLElement) {
-            document.activeElement.blur();
-        }
-
-        //ページのボタンを最初にfocusするか
-        if (this.focusFlag) {
-            qs(`#${id} [data-mapping]`)?.focus();
-            this.focusFlag = false;
-        }
+        // mappingが設定されたElementを更新
+        this.view.updateMappedElementList(pageId);
     }
 
     /**
@@ -146,41 +128,38 @@ class ScreenInteraction implements MyEventListener {
      * @param pageId ページのid
      * @param input Eventを追加するinput
      */
-    private addPageOperateEvent(pageId: string, input: Input): void {
-        if (this.listeningInputs.includes(input)) {
-            return;
-        }
+    private addPageOperateEventAndInput(pageId: string, input: Input): void {
+        if (this.registeredInputList.includes(input)) return;
+        this.registeredInputList.push(input);
 
-        const manager = input.g$manager;
-
-        const eventId = manager.addEvent(["onKeydown", "onButtondown", "onStickActive"], () => {
-            this.onInput(pageId, manager.g$latestPressingKey);
-        });
-        this.pageOperateEvents.push(eventId);
-        this.listeningInputs.push(input);
+        this.addPageOperateEvent(pageId, input.g$manager);
     }
 
-    private onFirstOperation() {
-        this.currentMappedElements[0]?.element.focus();
-        EventManager.executeEventsByClassName("interaction");
+    private addPageOperateEvent(pageId: string, manager: OperateManager) {
+        const operationEvents = ["onKeydown", "onButtondown", "onStickActive"];
+
+        const eventId = manager.addEvent(operationEvents, () => {
+            this.onOperate(pageId, manager.g$latestPressingKey);
+        });
+
+        this.pageOperateEvents.push(eventId);
     }
 
     private onCancel(pageId: string) {
-        this.focusFlag = true;
+        // ページ移動の可能性があるときはtrueにする
+        this.view.focusOnPageChange = true;
 
-        const backElement = qs(`#${pageId} .back`);
+        const backButton = qs(`#${pageId} .back`);
 
-        if (!backElement) {
-            EventManager.executeEventsByClassName("interaction");
+        if (!backButton) {
             return;
         }
 
-        this.updateLastOperateTime();
+        this.updateLastOperateTimeAndHidePointer();
 
-        EventManager.executeEventsByClassName("interaction");
         EventManager.executeEventsByClassName("cancelInteraction");
 
-        backElement.click();
+        backButton.click();
     }
 
     private onPushDirectionKey(direction: "up" | "down" | "right" | "left") {
@@ -191,10 +170,10 @@ class ScreenInteraction implements MyEventListener {
             left: [-1, null],
         };
 
-        const target = this.getTargetElement(dxdy[direction]);
+        const target = this.view.getTargetElement(dxdy[direction]);
         target.focus();
 
-        this.updateLastOperateTime();
+        this.updateLastOperateTimeAndHidePointer();
 
         if (direction === "left" || direction === "right") {
             this.operateRange(target, direction);
@@ -202,25 +181,27 @@ class ScreenInteraction implements MyEventListener {
     }
 
     private operateRange(target: HTMLElement, direction: "right" | "left") {
-        if (target.classList.contains("rangeContainer")) {
-            const input = target.querySelector<HTMLInputElement>("input")!;
+        if (!target.classList.contains("rangeContainer")) return;
 
-            if (direction === "left") {
-                input.stepDown();
-            } else {
-                input.stepUp();
-            }
+        const input = target.querySelector("input")!;
 
-            input.dispatchEvent(new Event("input"));
+        if (direction === "left") {
+            input.stepDown();
+        } else {
+            input.stepUp();
         }
+
+        input.dispatchEvent(new Event("input"));
     }
 
     private onOk() {
-        if (document.activeElement instanceof HTMLElement) return;
+        if (!(document.activeElement instanceof HTMLElement)) return;
 
-        this.focusFlag = true;
+        // ページ移動の可能性があるときはtrueにする
+        this.view.focusOnPageChange = true;
+
         this.g$selectedElement!.element.click();
-        this.updateLastOperateTime();
+        this.updateLastOperateTimeAndHidePointer();
 
         EventManager.executeEventsByClassName("confirmInteraction");
     }
@@ -237,7 +218,7 @@ class ScreenInteraction implements MyEventListener {
         if (rightKeys.includes(latestKey)) this.onPushDirectionKey("right");
     }
 
-    private onInput(pageId: string, latestKey: string) {
+    private onOperate(pageId: string, latestKey: string) {
         if (!this.operable) return;
 
         //前回の操作から間が空いていないならreturn
@@ -246,10 +227,12 @@ class ScreenInteraction implements MyEventListener {
         }
 
         // まだどこにもフォーカスがない場合
-        if (!this.g$selectedElement) {
-            this.onFirstOperation();
+        if (!this.view.getFocusedElement()) {
+            this.view.focusFirstElement();
             return;
         }
+
+        EventManager.executeEventsByClassName("interaction");
 
         const cancelKeys = ["KeyX", "Escape", "Backspace", "button:0"];
         if (cancelKeys.includes(latestKey)) {
@@ -263,81 +246,14 @@ class ScreenInteraction implements MyEventListener {
         if (okKeys.includes(latestKey)) {
             this.onOk();
         }
-
-        EventManager.executeEventsByClassName("interaction");
     }
 
     /**
      * 最後に操作した時間を更新する
      */
-    updateLastOperateTime(): void {
+    updateLastOperateTimeAndHidePointer(): void {
         this.lastOperateTime = Date.now();
         removeMousePointerTemporary();
-    }
-
-    private setHoverHighlight(button: HTMLElement): void {
-        button.addEventListener("mouseover", () => {
-            button.focus();
-        });
-
-        button.addEventListener("mouseleave", () => {
-            if (document.activeElement == button) {
-                button.blur();
-            }
-        });
-    }
-
-    /**
-     * 指定したページのmappingが設定されている要素を取得する
-     * @param pageId ページのid
-     */
-    private createMappedElements(pageId: string): MappedElement[] {
-        const elements = qsAll(`#${pageId} [data-mapping]`);
-
-        return elements.map((element) => ({
-            element: element,
-            coordinate: JSON.parse(element.dataset.mapping!) as [number, number],
-        }));
-    }
-
-    /**
-     * 現在選択している要素から、移動先の要素を返す
-     * 何も選択していなければ適当なmappingが設定されている要素、なければbodyを返す
-     * @param param0 相対的な移動先
-     * @returns 移動先のHTMLElement
-     */
-    private getTargetElement([dx, dy]: [number | null, number | null]): HTMLElement {
-        const selectedElement = this.g$selectedElement;
-
-        if (!selectedElement) {
-            if (this.currentMappedElements.length > 0) {
-                return this.currentMappedElements[0].element;
-            } else {
-                return document.body;
-            }
-        }
-
-        let [sx, sy] = selectedElement.coordinate;
-
-        let target = getMinElement(
-            this.currentMappedElements
-                .filter(({ coordinate: [x, y] }) => x == sx + (dx ?? x - sx) && y == sy + (dy ?? y - sy))
-                .map(({ element: option, coordinate: [x, y] }) => ({ element: option, value: Math.hypot(x - sx, y - sy) }))
-        );
-
-        if (!target) {
-            target = getMinElement(
-                this.currentMappedElements
-                    .filter(({ coordinate: [x, y] }) => x == (dx ? x : sx) && y == (dy ? y : sy))
-                    .map(({ element: option, coordinate: [x, y] }) => ({ element: option, value: (dx ? 0 : Math.sign(dy ?? 0) * y) + (dy ? 0 : Math.sign(dx ?? 0) * x) }))
-            );
-        }
-
-        if (!target) {
-            target = selectedElement.element;
-        }
-
-        return target;
     }
 }
 
@@ -347,7 +263,7 @@ screenInteraction.addEvent(["interaction"], () => {
     const id = pageManager.g$currentPageId;
     if (id == "pageStart") {
         qs("#pageStart").click();
-        screenInteraction.updateLastOperateTime();
+        screenInteraction.updateLastOperateTimeAndHidePointer();
         return;
     }
     if (id == "play") {
@@ -360,7 +276,7 @@ screenInteraction.addEvent(["interaction"], () => {
             if (GameProcessing.isReplaying() && currentGame.g$isPlaying) {
                 currentGame.game.stop();
                 screenInteraction.s$focusFlag = true;
-                screenInteraction.updateLastOperateTime();
+                screenInteraction.updateLastOperateTimeAndHidePointer();
                 pageManager.setPage("replayPause");
             }
         }
