@@ -1,5 +1,5 @@
 import { EventId, EventManager, MyEventListener } from "./EventManager";
-import { Input, OperateManager } from "./Interaction/Input";
+import { Input } from "./Interaction/Input";
 import { inputManager } from "./Interaction/InputManager";
 import { pageManager } from "./PageManager";
 import { sleep, qs, qsAll, getMinElement, removeMousePointerTemporary, qsAddEvent } from "./Utils";
@@ -183,10 +183,62 @@ class ScreenInteraction implements MyEventListener {
         backElement.click();
     }
 
-    private onInput(pageId: string, latestKey: string) {
-        if (!this.operable) {
-            return;
+    private onPushDirectionKey(direction: "up" | "down" | "right" | "left") {
+        const dxdy: Record<string, [null, number] | [number, null]> = {
+            up: [null, -1],
+            down: [null, 1],
+            right: [1, null],
+            left: [-1, null],
+        };
+
+        const target = this.getTargetElement(dxdy[direction]);
+        target.focus();
+
+        this.updateLastOperateTime();
+
+        if (direction === "left" || direction === "right") {
+            this.operateRange(target, direction);
         }
+    }
+
+    private operateRange(target: HTMLElement, direction: "right" | "left") {
+        if (target.classList.contains("rangeContainer")) {
+            const input = target.querySelector<HTMLInputElement>("input")!;
+
+            if (direction === "left") {
+                input.stepDown();
+            } else {
+                input.stepUp();
+            }
+
+            input.dispatchEvent(new Event("input"));
+        }
+    }
+
+    private onOk() {
+        if (document.activeElement instanceof HTMLElement) return;
+
+        this.focusFlag = true;
+        this.g$selectedElement!.element.click();
+        this.updateLastOperateTime();
+
+        EventManager.executeEventsByClassName("confirmInteraction");
+    }
+
+    private handleDirectionKey(latestKey: string) {
+        const upKeys = ["ArrowUp", "KeyW", "button:12", "stick:-1"];
+        const downKeys = ["ArrowDown", "KeyS", "button:13", "stick:+1"];
+        const leftKeys = ["ArrowLeft", "KeyA", "button:14", "stick:-0"];
+        const rightKeys = ["ArrowRight", "KeyD", "button:15", "stick:+0"];
+
+        if (upKeys.includes(latestKey)) this.onPushDirectionKey("up");
+        if (downKeys.includes(latestKey)) this.onPushDirectionKey("down");
+        if (leftKeys.includes(latestKey)) this.onPushDirectionKey("left");
+        if (rightKeys.includes(latestKey)) this.onPushDirectionKey("right");
+    }
+
+    private onInput(pageId: string, latestKey: string) {
+        if (!this.operable) return;
 
         //前回の操作から間が空いていないならreturn
         if (Date.now() - this.lastOperateTime <= Setting.debounceOperateTime) {
@@ -200,62 +252,16 @@ class ScreenInteraction implements MyEventListener {
         }
 
         const cancelKeys = ["KeyX", "Escape", "Backspace", "button:0"];
-        const upKeys = ["ArrowUp", "KeyW", "button:12", "stick:-1"];
-        const downKeys = ["ArrowDown", "KeyS", "button:13", "stick:+1"];
-        const leftKeys = ["ArrowLeft", "KeyA", "button:14", "stick:-0"];
-        const rightKeys = ["ArrowRight", "KeyD", "button:15", "stick:+0"];
-        const okKeys = ["Enter", "Space", "KeyZ", "button:1"];
-
         if (cancelKeys.includes(latestKey)) {
             this.onCancel(pageId);
-            return;
+            return true;
         }
 
-        if (upKeys.includes(latestKey)) {
-            const element = this.getTargetElement([null, -1]);
-            element.focus();
-            this.updateLastOperateTime();
-        }
+        this.handleDirectionKey(latestKey);
 
-        if (downKeys.includes(latestKey)) {
-            const element = this.getTargetElement([null, 1]);
-            element.focus();
-            this.updateLastOperateTime();
-        }
-
-        if (leftKeys.includes(latestKey)) {
-            const element = this.getTargetElement([-1, null]);
-
-            if (element.classList.contains("rangeContainer")) {
-                const input = element.querySelector<HTMLInputElement>("input")!;
-                input.stepDown();
-                input.dispatchEvent(new Event("input"));
-            }
-
-            element.focus();
-            this.updateLastOperateTime();
-        }
-
-        if (rightKeys.includes(latestKey)) {
-            const element = this.getTargetElement([1, null]);
-
-            if (element.classList.contains("rangeContainer")) {
-                const input = element.querySelector<HTMLInputElement>("input")!;
-                input.stepUp();
-                input.dispatchEvent(new Event("input"));
-            }
-
-            element.focus();
-            this.updateLastOperateTime();
-        }
-
+        const okKeys = ["Enter", "Space", "KeyZ", "button:1"];
         if (okKeys.includes(latestKey)) {
-            if (document.activeElement instanceof HTMLElement) {
-                this.focusFlag = true;
-                this.g$selectedElement.element.click();
-                this.updateLastOperateTime();
-                EventManager.executeEventsByClassName("confirmInteraction");
-            }
+            this.onOk();
         }
 
         EventManager.executeEventsByClassName("interaction");
@@ -269,7 +275,7 @@ class ScreenInteraction implements MyEventListener {
         removeMousePointerTemporary();
     }
 
-    setHoverHighlight(button: HTMLElement): void {
+    private setHoverHighlight(button: HTMLElement): void {
         button.addEventListener("mouseover", () => {
             button.focus();
         });
