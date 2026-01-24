@@ -300,8 +300,9 @@ button {
 #playerRegister {
     background-image: repeating-linear-gradient(45deg, #ccc 0px, #ccc 5vh, #c3c3c3 5vh, #c3c3c3 10vh);
 
-    & .text {
+    & #registerText {
         font-size: 5vh;
+        text-wrap: nowrap;
     }
     & #connectionLabel {
         height: 15vh;

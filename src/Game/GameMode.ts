@@ -23,6 +23,7 @@ export abstract class GameMode implements MyEventListener {
         gameEvents.push(eventId);
         return eventId;
     }
+
     constructor(players: GamePlayer[]) {
         this.players = players;
         this.operateMemories = new Array(players.length).fill(undefined).map(() => []);
@@ -39,6 +40,12 @@ export abstract class GameMode implements MyEventListener {
                 );
             });
         });
+    }
+    get g$hasFinished() {
+        return this.state.hasFinished;
+    }
+    get g$isPlaying() {
+        return this.players.some((player) => player.loop.g$isLooping);
     }
 
     abstract start(): void;

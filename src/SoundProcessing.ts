@@ -1,7 +1,7 @@
 import { BGM } from "./BGM";
 import { flagManager } from "./FlagManager";
 import { pageManager } from "./PageManager";
-import { ScreenInteractionSetting } from "./ScreenInteraction";
+import { screenInteraction } from "./ScreenInteraction";
 import { Sound } from "./Sound";
 import { qsAddEvent } from "./Utils";
 
@@ -29,39 +29,39 @@ qsAddEvent("button", "focus", () => {
 pageManager.addEvent(["pageChanged-pageStart"], async () => {
     if (bgm != -1) {
         pageManager.s$valid = false;
-        ScreenInteractionSetting.operable = false;
+        screenInteraction.s$operable = false;
         if (BGM.isPlaying()) {
             await BGM.pause();
         }
         bgm = -1;
         pageManager.s$valid = true;
-        ScreenInteractionSetting.operable = true;
+        screenInteraction.s$operable = true;
     }
 });
 
 pageManager.addEvent(["pageChanged-title"], async () => {
     if (bgm != 0) {
         pageManager.s$valid = false;
-        ScreenInteractionSetting.operable = false;
+        screenInteraction.s$operable = false;
         await BGM.pause();
         await BGM.fetch({ src: "assets/musics/つみきのおしろ.m4a" });
         await BGM.play();
         bgm = 0;
         pageManager.s$valid = true;
-        ScreenInteractionSetting.operable = true;
+        screenInteraction.s$operable = true;
     }
 });
 
 pageManager.addEvent(["pageChanged-startEffect"], async () => {
     if (bgm != 1) {
         pageManager.s$valid = false;
-        ScreenInteractionSetting.operable = false;
+        screenInteraction.s$operable = false;
         await BGM.pause();
         await BGM.fetch({ src: "assets/musics/ならべてトライアングル.m4a" });
         await BGM.play();
         bgm = 1;
         pageManager.s$valid = true;
-        ScreenInteractionSetting.operable = true;
+        screenInteraction.s$operable = true;
     }
 });
 

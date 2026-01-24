@@ -1,4 +1,4 @@
-import { setHoverHighlight } from "../ScreenInteraction";
+import { screenInteraction } from "../ScreenInteraction";
 import { qs, qsAll } from "../Utils";
 import { ReplayData } from "./Replay";
 
@@ -24,7 +24,7 @@ export class ReplayDom {
         }
 
         container.querySelectorAll("button").forEach((button) => {
-            setHoverHighlight(button);
+            screenInteraction.setHoverHighlight(button);
         });
 
         //座標の割り振り

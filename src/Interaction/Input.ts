@@ -5,9 +5,9 @@ import { KeyboardManager } from "./KeyboardManager";
 type InputType = "keyboard" | "gamepad" | "autoKeyboard";
 
 export class Input {
-    manager: KeyboardManager | GamepadManager | AutoKeyboardManager;
-    type: InputType;
-    index: number;
+    private manager: KeyboardManager | GamepadManager | AutoKeyboardManager;
+    private type: InputType;
+    private index: number;
     constructor(type: InputType = "keyboard", index = 0) {
         this.type = type;
         this.index = index;
@@ -31,6 +31,10 @@ export class Input {
     }
 
     get g$type() {
+        return this.type;
+    }
+
+    get g$index() {
         return this.type;
     }
 

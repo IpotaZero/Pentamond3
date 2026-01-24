@@ -16,9 +16,24 @@ export class DisposableGame {
     readonly playSetting: PlaySetting;
     readonly replayData?: ReplayData;
 
-    private isPlaying = true;
+    private hasStarted = false;
+    /**
+     * すでに開始されているか
+     */
+    get g$hasStarted() {
+        return this.hasStarted;
+    }
+    /**
+     * すでに終了しているか
+     */
+    get g$hasFinished() {
+        return this.game.g$hasFinished;
+    }
+    /**
+     * プレイ中か
+     */
     get g$isPlaying() {
-        return this.isPlaying;
+        return this.game.g$isPlaying;
     }
 
     onFinished = () => {};
@@ -48,7 +63,6 @@ export class DisposableGame {
     quit() {
         this.game.stop();
         this.game.remove();
-        this.isPlaying = false;
     }
 
     appendPlayersTo(container: HTMLElement) {
@@ -63,6 +77,7 @@ export class DisposableGame {
 
     async start() {
         this.game.start();
+        this.hasStarted = true;
     }
 
     private async onGameFinish() {
@@ -72,7 +87,6 @@ export class DisposableGame {
 
         await sleep(1000);
         this.game.remove();
-        this.isPlaying = false;
         this.onFinished();
     }
 
