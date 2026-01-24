@@ -6,6 +6,7 @@ import { sleep, qs, qsAll, getMinElement, removeMousePointerTemporary, qsAddEven
 import * as Setting from "./Settings";
 import { GameProcessing } from "./GameProcessing/GameProcessing";
 import { ScreenInteractionView } from "./ScreenInteractionView";
+import { ScreenInteractionInputHandler } from "./ScreenInteractionInputHandler";
 
 export type MappedElement = {
     element: HTMLElement;
@@ -18,11 +19,9 @@ class ScreenInteraction implements MyEventListener {
 
     private operable: boolean = true;
 
-    private registeredInputList: Input[] = [];
-    private pageOperateEvents: EventId[] = [];
-
     private lastOperateTime = 0;
     private readonly view = new ScreenInteractionView();
+    private readonly inputHandler = new ScreenInteractionInputHandler();
 
     /**
      * @param interaction すべての操作
@@ -44,6 +43,10 @@ class ScreenInteraction implements MyEventListener {
         this.setEvents();
     }
 
+    areOperated(interactions: string[]) {
+        return this.inputHandler.areOperated(interactions);
+    }
+
     set s$operable(operable: boolean) {
         this.operable = operable;
     }
@@ -59,9 +62,9 @@ class ScreenInteraction implements MyEventListener {
         return this.lastOperateTime;
     }
 
-    get g$listeningInputs(): readonly Input[] {
-        return this.registeredInputList.map((input) => input);
-    }
+    // get g$listeningInputs(): readonly Input[] {
+    //     return this.eventHandler.registeredInputList.map((input) => input);
+    // }
 
     get g$selectedElement(): MappedElement | null {
         return this.view.getFocusedElement();
@@ -85,16 +88,10 @@ class ScreenInteraction implements MyEventListener {
         this.view.setupMouseOperation();
         this.view.setupRangeOperation();
 
-        // 途中追加されたinputにイベントを追加
-        inputManager.addEvent(["inputAdded"], () => {
-            const addedInput = inputManager.g$inputs.at(-1)!;
-
-            if (addedInput.isAuto()) {
-                return;
-            }
-
-            this.addPageOperateEventAndInput(pageManager.g$currentPageId ?? "pageStart", addedInput);
-        });
+        this.inputHandler.onOperate = (pageId, pushedKey) => {
+            this.onOperate(pageId, pushedKey);
+        };
+        this.inputHandler.setEvents();
     }
 
     private async updatePageOperateEvent() {
@@ -106,9 +103,7 @@ class ScreenInteraction implements MyEventListener {
         this.view.shiftFocusTo(pageId);
 
         // イベントを削除
-        EventManager.removeEvents(this.pageOperateEvents);
-        this.pageOperateEvents = [];
-        this.registeredInputList = [];
+        this.inputHandler.removeInput();
 
         //早すぎるページ遷移の禁止
         await sleep(Setting.debounceOperateTime * 2.5);
@@ -116,33 +111,11 @@ class ScreenInteraction implements MyEventListener {
         // イベントの追加
         inputManager.g$inputs.forEach((input) => {
             if (input.isAuto()) return;
-            this.addPageOperateEventAndInput(pageId, input);
+            this.inputHandler.addInput(pageId, input);
         });
 
         // mappingが設定されたElementを更新
         this.view.updateMappedElementList(pageId);
-    }
-
-    /**
-     * 指定したページを操作するEventを指定したinputに追加する
-     * @param pageId ページのid
-     * @param input Eventを追加するinput
-     */
-    private addPageOperateEventAndInput(pageId: string, input: Input): void {
-        if (this.registeredInputList.includes(input)) return;
-        this.registeredInputList.push(input);
-
-        this.addPageOperateEvent(pageId, input.g$manager);
-    }
-
-    private addPageOperateEvent(pageId: string, manager: OperateManager) {
-        const operationEvents = ["onKeydown", "onButtondown", "onStickActive"];
-
-        const eventId = manager.addEvent(operationEvents, () => {
-            this.onOperate(pageId, manager.g$latestPressingKey);
-        });
-
-        this.pageOperateEvents.push(eventId);
     }
 
     private onCancel(pageId: string) {
@@ -237,7 +210,7 @@ class ScreenInteraction implements MyEventListener {
         const cancelKeys = ["KeyX", "Escape", "Backspace", "button:0"];
         if (cancelKeys.includes(latestKey)) {
             this.onCancel(pageId);
-            return true;
+            return;
         }
 
         this.handleDirectionKey(latestKey);
@@ -260,15 +233,19 @@ class ScreenInteraction implements MyEventListener {
 export const screenInteraction = new ScreenInteraction();
 
 screenInteraction.addEvent(["interaction"], () => {
-    const id = pageManager.g$currentPageId;
-    if (id == "pageStart") {
+    const currentPageId = pageManager.g$currentPageId;
+
+    if (currentPageId == "pageStart") {
         qs("#pageStart").click();
         screenInteraction.updateLastOperateTimeAndHidePointer();
         return;
     }
-    if (id == "play") {
+
+    if (currentPageId == "play") {
         const pauseInteractions = ["KeyP", ...Setting.gamepadConfigPresets[0].pause];
-        const requiredPause = screenInteraction.g$listeningInputs.some((input) => pauseInteractions.includes(input.g$manager.g$latestPressingKey));
+
+        const requiredPause = screenInteraction.areOperated(pauseInteractions);
+
         if (requiredPause) {
             const currentGame = GameProcessing.currentGame;
             if (!currentGame) throw new Error("ゲームが始められていないのにポーズされた。");
