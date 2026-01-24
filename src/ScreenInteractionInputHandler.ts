@@ -7,10 +7,16 @@ export class ScreenInteractionInputHandler {
     private registeredInputList: Input[] = [];
     private pageOperateEvents: EventId[] = [];
 
-    onOperate = (pageId: string, pushedKey: string) => {};
+    /**
+     * 登録されたinputが何かしらの操作を行ったとき呼ばれる
+     * @param pushedKey
+     */
+    onOperate = (pushedKey: string) => {};
 
+    /**
+     * 途中追加されたinputを登録するイベント
+     */
     setEvents() {
-        // 途中追加されたinputにイベントを追加
         inputManager.addEvent(["inputAdded"], () => {
             const addedInput = inputManager.g$inputs.at(-1)!;
 
@@ -19,7 +25,7 @@ export class ScreenInteractionInputHandler {
             }
 
             const pageId = pageManager.g$currentPageId ?? "pageStart";
-            this.addInput(pageId, addedInput);
+            this.registerInput(addedInput);
         });
     }
 
@@ -38,7 +44,8 @@ export class ScreenInteractionInputHandler {
      * @param pageId ページのid
      * @param input Eventを追加するinput
      */
-    addInput(pageId: string, input: Input): void {
+    registerInput(input: Input): void {
+        // すでに登録されているならリターン
         if (this.registeredInputList.includes(input)) return;
         this.registeredInputList.push(input);
 
@@ -46,7 +53,7 @@ export class ScreenInteractionInputHandler {
 
         const operationEvents = ["onKeydown", "onButtondown", "onStickActive"];
 
-        const eventId = manager.addEvent(operationEvents, () => this.onOperate(pageId, manager.g$latestPressingKey));
+        const eventId = manager.addEvent(operationEvents, () => this.onOperate(manager.g$latestPressingKey));
 
         this.pageOperateEvents.push(eventId);
     }

@@ -11,8 +11,12 @@ export class ScreenInteractionView {
         this.mappedElementList = this.createMappedElements(pageId);
     }
 
-    setupMouseOperation() {
-        //マウス操作との整合
+    /**
+     * ホバーしたmappedElementをフォーカスする
+     *
+     * ホバーが外れたらブラーする
+     */
+    setupMouseFocusing() {
         qsAll("[data-mapping]")
             .filter((e) => e instanceof HTMLElement)
             .forEach((button) => {
@@ -20,8 +24,10 @@ export class ScreenInteractionView {
             });
     }
 
-    setupRangeOperation() {
-        //input要素を触った後にそれを含む要素にfocusさせる
+    /**
+     * mappedElementの中のrangeをクリックしたとき、そのmappedElementをフォーカスする
+     */
+    setupRangeFocusing() {
         qsAll(".rangeContainer[data-mapping]").forEach((container) => {
             container.querySelectorAll("input").forEach((element) => {
                 element.addEventListener("click", () => {

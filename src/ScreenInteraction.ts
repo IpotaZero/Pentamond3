@@ -1,12 +1,12 @@
 import { EventId, EventManager, MyEventListener } from "./EventManager";
-import { Input, OperateManager } from "./Interaction/Input";
 import { inputManager } from "./Interaction/InputManager";
 import { pageManager } from "./PageManager";
-import { sleep, qs, qsAll, getMinElement, removeMousePointerTemporary, qsAddEvent } from "./Utils";
+import { sleep, qs } from "./Utils";
 import * as Setting from "./Settings";
 import { GameProcessing } from "./GameProcessing/GameProcessing";
 import { ScreenInteractionView } from "./ScreenInteractionView";
 import { ScreenInteractionInputHandler } from "./ScreenInteractionInputHandler";
+import { ScreenInteractionOperationRunner } from "./ScreenInteractionOperationRunner";
 
 export type MappedElement = {
     element: HTMLElement;
@@ -19,9 +19,9 @@ class ScreenInteraction implements MyEventListener {
 
     private operable: boolean = true;
 
-    private lastOperateTime = 0;
     private readonly view = new ScreenInteractionView();
     private readonly inputHandler = new ScreenInteractionInputHandler();
+    private readonly operationRunner = new ScreenInteractionOperationRunner(this.view);
 
     /**
      * @param interaction すべての操作
@@ -47,6 +47,10 @@ class ScreenInteraction implements MyEventListener {
         return this.inputHandler.areOperated(interactions);
     }
 
+    updateLastOperationTime() {
+        this.operationRunner.updateLastOperationTimeAndHidePointer();
+    }
+
     set s$operable(operable: boolean) {
         this.operable = operable;
     }
@@ -59,12 +63,8 @@ class ScreenInteraction implements MyEventListener {
     }
 
     get g$lastOperateTime() {
-        return this.lastOperateTime;
+        return this.operationRunner.getLastOperationTime();
     }
-
-    // get g$listeningInputs(): readonly Input[] {
-    //     return this.eventHandler.registeredInputList.map((input) => input);
-    // }
 
     get g$selectedElement(): MappedElement | null {
         return this.view.getFocusedElement();
@@ -80,16 +80,12 @@ class ScreenInteraction implements MyEventListener {
             this.updatePageOperateEvent();
         });
 
-        qsAddEvent("[data-mapping]", "click", () => {
-            // 最後にclickを行った時間の更新
-            this.lastOperateTime = Date.now();
-        });
+        this.operationRunner.setEvents();
+        this.view.setupMouseFocusing();
+        this.view.setupRangeFocusing();
 
-        this.view.setupMouseOperation();
-        this.view.setupRangeOperation();
-
-        this.inputHandler.onOperate = (pageId, pushedKey) => {
-            this.onOperate(pageId, pushedKey);
+        this.inputHandler.onOperate = (pushedKey) => {
+            this.onOperate(pushedKey);
         };
         this.inputHandler.setEvents();
     }
@@ -111,122 +107,17 @@ class ScreenInteraction implements MyEventListener {
         // イベントの追加
         inputManager.g$inputs.forEach((input) => {
             if (input.isAuto()) return;
-            this.inputHandler.addInput(pageId, input);
+            this.inputHandler.registerInput(input);
         });
 
         // mappingが設定されたElementを更新
         this.view.updateMappedElementList(pageId);
     }
 
-    private onCancel(pageId: string) {
-        // ページ移動の可能性があるときはtrueにする
-        this.view.focusOnPageChange = true;
-
-        const backButton = qs(`#${pageId} .back`);
-
-        if (!backButton) {
-            return;
-        }
-
-        this.updateLastOperateTimeAndHidePointer();
-
-        EventManager.executeEventsByClassName("cancelInteraction");
-
-        backButton.click();
-    }
-
-    private onPushDirectionKey(direction: "up" | "down" | "right" | "left") {
-        const dxdy: Record<string, [null, number] | [number, null]> = {
-            up: [null, -1],
-            down: [null, 1],
-            right: [1, null],
-            left: [-1, null],
-        };
-
-        const target = this.view.getTargetElement(dxdy[direction]);
-        target.focus();
-
-        this.updateLastOperateTimeAndHidePointer();
-
-        if (direction === "left" || direction === "right") {
-            this.operateRange(target, direction);
-        }
-    }
-
-    private operateRange(target: HTMLElement, direction: "right" | "left") {
-        if (!target.classList.contains("rangeContainer")) return;
-
-        const input = target.querySelector("input")!;
-
-        if (direction === "left") {
-            input.stepDown();
-        } else {
-            input.stepUp();
-        }
-
-        input.dispatchEvent(new Event("input"));
-    }
-
-    private onOk() {
-        if (!(document.activeElement instanceof HTMLElement)) return;
-
-        // ページ移動の可能性があるときはtrueにする
-        this.view.focusOnPageChange = true;
-
-        this.g$selectedElement!.element.click();
-        this.updateLastOperateTimeAndHidePointer();
-
-        EventManager.executeEventsByClassName("confirmInteraction");
-    }
-
-    private handleDirectionKey(latestKey: string) {
-        const upKeys = ["ArrowUp", "KeyW", "button:12", "stick:-1"];
-        const downKeys = ["ArrowDown", "KeyS", "button:13", "stick:+1"];
-        const leftKeys = ["ArrowLeft", "KeyA", "button:14", "stick:-0"];
-        const rightKeys = ["ArrowRight", "KeyD", "button:15", "stick:+0"];
-
-        if (upKeys.includes(latestKey)) this.onPushDirectionKey("up");
-        if (downKeys.includes(latestKey)) this.onPushDirectionKey("down");
-        if (leftKeys.includes(latestKey)) this.onPushDirectionKey("left");
-        if (rightKeys.includes(latestKey)) this.onPushDirectionKey("right");
-    }
-
-    private onOperate(pageId: string, latestKey: string) {
+    private onOperate(latestKey: string) {
         if (!this.operable) return;
 
-        //前回の操作から間が空いていないならreturn
-        if (Date.now() - this.lastOperateTime <= Setting.debounceOperateTime) {
-            return;
-        }
-
-        // まだどこにもフォーカスがない場合
-        if (!this.view.getFocusedElement()) {
-            this.view.focusFirstElement();
-            return;
-        }
-
-        EventManager.executeEventsByClassName("interaction");
-
-        const cancelKeys = ["KeyX", "Escape", "Backspace", "button:0"];
-        if (cancelKeys.includes(latestKey)) {
-            this.onCancel(pageId);
-            return;
-        }
-
-        this.handleDirectionKey(latestKey);
-
-        const okKeys = ["Enter", "Space", "KeyZ", "button:1"];
-        if (okKeys.includes(latestKey)) {
-            this.onOk();
-        }
-    }
-
-    /**
-     * 最後に操作した時間を更新する
-     */
-    updateLastOperateTimeAndHidePointer(): void {
-        this.lastOperateTime = Date.now();
-        removeMousePointerTemporary();
+        this.operationRunner.run(latestKey);
     }
 }
 
@@ -237,7 +128,7 @@ screenInteraction.addEvent(["interaction"], () => {
 
     if (currentPageId == "pageStart") {
         qs("#pageStart").click();
-        screenInteraction.updateLastOperateTimeAndHidePointer();
+        screenInteraction.updateLastOperationTime();
         return;
     }
 
@@ -253,7 +144,7 @@ screenInteraction.addEvent(["interaction"], () => {
             if (GameProcessing.isReplaying() && currentGame.g$isPlaying) {
                 currentGame.game.stop();
                 screenInteraction.s$focusFlag = true;
-                screenInteraction.updateLastOperateTimeAndHidePointer();
+                screenInteraction.updateLastOperationTime();
                 pageManager.setPage("replayPause");
             }
         }
