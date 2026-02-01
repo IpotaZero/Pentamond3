@@ -1,4 +1,4 @@
-import { pageManager } from "../PageManager";
+import { pageManager } from "../UtilManagers/PageManager";
 import { qsAddEvent } from "../Utils";
 import { GameProcessing } from "./GameProcessing";
 import { inputManager } from "../Interaction/InputManager";

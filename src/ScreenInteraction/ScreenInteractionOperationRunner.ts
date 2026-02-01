@@ -1,8 +1,8 @@
-import { EventManager } from "../EventManager";
+import { EventManager } from "../UtilManagers/EventManager";
 import { ScreenInteractionView } from "./ScreenInteractionView";
 import { qsAddEvent, removeMousePointerTemporary, qs } from "../Utils";
 import * as Setting from "../Settings";
-import { pageManager } from "../PageManager";
+import { pageManager } from "../UtilManagers/PageManager";
 
 export class ScreenInteractionOperationRunner {
     private lastOperateTime = 0;
@@ -28,13 +28,14 @@ export class ScreenInteractionOperationRunner {
             return;
         }
 
+        EventManager.executeEventsByClassName("interaction");
+        EventManager.executeEventsByClassName(`interaction-${pageManager.g$currentPageId}`);
+
         // まだどこにもフォーカスがない場合
         if (!this.view.getFocusedElement()) {
             this.view.focusFirstElement();
             return;
         }
-
-        EventManager.executeEventsByClassName("interaction");
 
         const cancelKeys = ["KeyX", "Escape", "Backspace", "button:0"];
         if (cancelKeys.includes(pushedKey)) {
@@ -71,6 +72,7 @@ export class ScreenInteractionOperationRunner {
         this.updateLastOperationTimeAndHidePointer();
 
         EventManager.executeEventsByClassName("cancelInteraction");
+        EventManager.executeEventsByClassName(`cancelInteraction-${pageManager.g$currentPageId}`);
 
         backButton.click();
     }
@@ -117,6 +119,7 @@ export class ScreenInteractionOperationRunner {
         this.updateLastOperationTimeAndHidePointer();
 
         EventManager.executeEventsByClassName("confirmInteraction");
+        EventManager.executeEventsByClassName(`confirmInteraction-${pageManager.g$currentPageId}`);
     }
 
     private handleDirectionKey(latestKey: string) {

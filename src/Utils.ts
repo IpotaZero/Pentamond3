@@ -1,4 +1,4 @@
-import { EventManager } from "./EventManager";
+import { EventManager } from "./UtilManagers/EventManager";
 // import { gameManager } from "./Run";
 
 // function sleepGame(ms: number): Promise<void> {

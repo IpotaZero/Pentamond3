@@ -1,6 +1,6 @@
 import { BlockManager } from "./BlockManager";
 import { GraphicData } from "../CanvasManager";
-import { EventId, EventManager, MyEventListener } from "../EventManager";
+import { EventId, EventManager, MyEventListener } from "../UtilManagers/EventManager";
 import { MondState } from "./Monoiamond";
 import { NextManager } from "./NextManager";
 import { Pentiamond } from "./Pentiamond";

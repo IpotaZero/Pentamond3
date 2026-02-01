@@ -2,7 +2,7 @@ import { Mode1 } from "../Game/Modes/Mode1";
 import { Mode2 } from "../Game/Modes/Mode2";
 import { Input } from "../Interaction/Input";
 import { inputManager } from "../Interaction/InputManager";
-import { pageManager } from "../PageManager";
+import { pageManager } from "../UtilManagers/PageManager";
 import { playBackground } from "../PlayBackground";
 import { Replay, ReplayData } from "../Replay/Replay";
 import { DisposableGame } from "./DisposableGame";

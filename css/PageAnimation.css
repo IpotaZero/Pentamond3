@@ -94,7 +94,7 @@
 }
 
 #loadingCircle {
-    animation-duration: 500ms;
+    animation-duration: 800ms;
     animation-timing-function: linear;
     animation-delay: 0;
     animation-direction: normal;
@@ -105,18 +105,15 @@
 @keyframes loadingCircle {
     0% {
         transform: rotate(0deg);
-        scale: 1;
-        opacity: 1;
+        filter: hue-rotate(0deg);
     }
     50% {
-        transform: rotate(180deg);
-        scale: 1.5;
-        opacity: 0.7;
+        transform: rotate(180deg) translateY(-12vh);
+        filter: hue-rotate(180deg);
     }
     100% {
         transform: rotate(360deg);
-        scale: 1;
-        opacity: 1;
+        filter: hue-rotate(0deg);
     }
 }
 

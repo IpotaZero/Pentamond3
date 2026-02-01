@@ -2,7 +2,7 @@ import { GamePlayer } from "./Game/GamePlayer";
 import { qsAll, qs, sleep } from "./Utils";
 import { Replay } from "./Replay/Replay";
 import { PlaySetting } from "./BeforePlaying/PlaySettingSetter";
-import { pageManager } from "./PageManager";
+import { pageManager } from "./UtilManagers/PageManager";
 
 /**
  * ResultPageに関する、状態を持たない関数群

@@ -1,5 +1,4 @@
-import { pageManager } from "./PageManager";
-import { Sound } from "./Sound";
+import { pageManager } from "./UtilManagers/PageManager";
 import { qs, qsAddEvent, qsAll, sleep } from "./Utils";
 import { inputManager } from "./Interaction/InputManager";
 import "./ScreenInteraction/ScreenInteraction";
@@ -11,6 +10,7 @@ import { DeleteDataHandler } from "./DeleteDataHandler";
 import { GameStartEventSetter } from "./GameProcessing/GameStarter";
 import { PlaySettingSetter } from "./BeforePlaying/PlaySettingSetter";
 import { ResultPageHandler } from "./ResultPageHandler";
+import { elementManager } from "./UtilManagers/ElementManager";
 
 //不正なページ遷移の防止
 setupInputBehavior();
@@ -41,9 +41,10 @@ qsAddEvent("#pageStart", "click", () => {
 });
 
 //起動時処理
-export let se: Sound[] = [];
 document.addEventListener("DOMContentLoaded", async () => {
+    soundsInit();
     pageManager.init();
+    elementManager.init();
     inputManager.s$maxInputNumber = 1;
 
     ResultPageHandler.setEvents();
@@ -52,8 +53,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // BeforePlaying
     PlaySettingSetter.setEvents();
     ControllerRegisterer.setEvents();
-
-    soundsInit();
 
     // グラフィック設定
     GraphicSetting.init();

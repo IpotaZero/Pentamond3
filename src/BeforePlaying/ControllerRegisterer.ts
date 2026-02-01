@@ -1,5 +1,5 @@
 import { inputManager } from "../Interaction/InputManager";
-import { pageManager } from "../PageManager";
+import { pageManager } from "../UtilManagers/PageManager";
 import { qs, qsAddEvent, qsAll, sleep } from "../Utils";
 
 import * as Setting from "../Settings";

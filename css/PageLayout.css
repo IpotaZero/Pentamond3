@@ -190,6 +190,15 @@ button {
     }
 }
 
+#pageStart {
+    & .label {
+        &#pageStartLabel {
+            font-size: 9vh;
+        }
+        font-size: 3vh;
+    }
+}
+
 .rangeContainer {
     display: flex;
     justify-content: center;
@@ -479,9 +488,17 @@ button {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5vh;
+            gap: 2vh;
             & .replayButton {
                 font-size: 4.5vh;
+                margin-left: -10vh;
+                &:focus {
+                    scale: 1;
+                }
+            }
+            & .replayDataDescription {
+                font-size: 3vh;
+                width: 25vh;
             }
             & .replaySaveButton {
                 height: 7vh;
@@ -561,6 +578,9 @@ button {
             & .replayButton {
                 font-size: 4.5vh;
                 margin-left: -10vh;
+                &:focus {
+                    scale: 1;
+                }
             }
             & .replayDataDescription {
                 font-size: 3vh;
@@ -681,6 +701,54 @@ button {
     }
 }
 
-/* *{
-  background-image: url("../assets/sounds/通常ボタン.m4a");  
-} */
+.scrollableContainer {
+    padding-top: 4vh;
+    padding-bottom: 4vh;
+    height: 50vh;
+    width: 130vh;
+    overflow-y: auto;
+    background-color: #dddddd88;
+    border-radius: 4vh;
+    justify-content: start;
+    align-items: center;
+    border: 1vh #5acd solid;
+    display: flex;
+    flex-direction: column;
+    gap: 2vh;
+    &::-webkit-scrollbar {
+        width: 3.5vh;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: #ccc0;
+        border-radius: 2vh;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #678;
+        border-radius: 2vh;
+        border: 0.4vh solid #456;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: #444;
+    }
+
+    & .selectedValue {
+        color: #ee8888;
+        border: #2ac 0.5vh dashed;
+        border-radius: 1vh;
+    }
+}
+
+#bgmSetting {
+    & .options {
+        & .label {
+            font-size: 5vh;
+            margin-right: 5vh;
+        }
+        & .selector {
+            color: #ee8888;
+        }
+    }
+}

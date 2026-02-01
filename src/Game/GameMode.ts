@@ -1,4 +1,4 @@
-import { EventId, EventManager, MyEventListener } from "../EventManager";
+import { EventId, EventManager, MyEventListener } from "../UtilManagers/EventManager";
 import { GamePlayer } from "./GamePlayer";
 
 export const gameEvents: EventId[] = [];
@@ -33,7 +33,7 @@ export abstract class GameMode implements MyEventListener {
                 gameEvents.push(
                     p.operator.addEvent([operateName], () => {
                         this.operateMemories[i].push({
-                            time: p.loop.g$elapsedTime,
+                            time: Math.floor(p.loop.g$elapsedTime),
                             operateName: operateName as OperateName,
                         });
                     })

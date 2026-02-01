@@ -1,5 +1,5 @@
-import { MyEventListener, EventId, EventManager } from "../EventManager";
-import { LoopManager } from "../LoopManager";
+import { MyEventListener, EventId, EventManager } from "../UtilManagers/EventManager";
+import { LoopManager } from "../UtilManagers/LoopManager";
 
 export type AutoKeyboardInputData = {
     time: number;

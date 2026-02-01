@@ -1,42 +1,61 @@
 import { GameProcessing } from "../GameProcessing/GameProcessing";
-import { pageManager } from "../PageManager";
+import { pageManager } from "../UtilManagers/PageManager";
+import { se } from "../SoundProcessing";
 import { qsAll, qs, sleep } from "../Utils";
 import { ReplayData, Replay } from "./Replay";
 import { ReplayDataHandler } from "./ReplayDataHandler";
+import { elementManager } from "../UtilManagers/ElementManager";
 
 export class ReplayEventSetter {
     static setTempReplayPageEvent(tempDataList: ReplayData[], { replayButton, saveButton }: { replayButton: HTMLButtonElement; saveButton: HTMLButtonElement }) {
         replayButton.addEventListener("click", () => {
             const replayButtons = qsAll("#replay .replayButton");
             const index = replayButtons.findIndex((button) => button == replayButton);
-            // lastOperateTime = Date.now();
+            se[0].play();
             GameProcessing.startReplay(tempDataList.at(-index - 1)!);
+        });
+        replayButton.addEventListener("focus", () => {
+            se[1].play();
+            elementManager.scrollCenter(replayButton.parentElement!);
         });
 
         saveButton.addEventListener("click", async () => {
             const saveButtons = qsAll("#replay .replaySaveButton");
             const index = saveButtons.findIndex((button) => button == saveButton);
 
-            // lastOperateTime = Date.now();
             const succeed = await Replay.save(tempDataList.at(-index - 1)!);
             if (succeed) {
+                se[0].play();
                 Replay.setupSavedReplayPage();
                 saveButton.classList.add("replaySavedButton");
             }
+        });
+        saveButton.addEventListener("focus", async () => {
+            se[1].play();
+            elementManager.scrollCenter(saveButton.parentElement!);
         });
     }
 
     static setSavedReplayPageEvent(replayDataList: ReplayData[], { replayButtons, deleteButtons }: { replayButtons: HTMLButtonElement[]; deleteButtons: HTMLButtonElement[] }) {
         replayButtons.forEach((replayButton, i) => {
             replayButton.addEventListener("click", () => {
-                // lastOperateTime = Date.now();
+                se[0].play();
                 GameProcessing.startReplay(replayDataList[i]);
+            });
+            replayButton.addEventListener("focus", () => {
+                se[1].play();
+                elementManager.scrollCenter(replayButton.parentElement!);
             });
         });
 
         deleteButtons.forEach((deleteButton, i) => {
             deleteButton.addEventListener("click", () => {
                 this.onClickDeleteButton(replayDataList[i]);
+                se[0].play();
+            });
+            deleteButton.addEventListener("focus", () => {
+                se[1].play();
+                elementManager.scrollCenter(deleteButton.parentElement!);
             });
         });
     }

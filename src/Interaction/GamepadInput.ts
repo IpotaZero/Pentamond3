@@ -1,4 +1,4 @@
-import { LoopManager } from "../LoopManager";
+import { LoopManager } from "../UtilManagers/LoopManager";
 
 export interface GamepadButtonEvent {
     /**

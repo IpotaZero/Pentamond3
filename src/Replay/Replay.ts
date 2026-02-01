@@ -6,7 +6,7 @@ import { GameMode } from "../Game/GameMode";
 
 import { ReplayDom } from "./ReplayDom";
 import { ReplayDataHandler } from "./ReplayDataHandler";
-import { pageManager } from "../PageManager";
+import { pageManager } from "../UtilManagers/PageManager";
 import { ReplayEventSetter } from "./ReplayEventSetter";
 import { PlaySetting } from "../BeforePlaying/PlaySettingSetter";
 import { qsAll } from "../Utils";

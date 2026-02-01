@@ -1,4 +1,4 @@
-import { MyEventListener, EventId, EventManager } from "../EventManager";
+import { MyEventListener, EventId, EventManager } from "../UtilManagers/EventManager";
 import { GamepadInput } from "./GamepadInput";
 
 export class GamepadManager implements MyEventListener {

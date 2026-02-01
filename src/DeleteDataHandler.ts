@@ -1,4 +1,4 @@
-import { pageManager } from "./PageManager";
+import { pageManager } from "./UtilManagers/PageManager";
 import { qs, sleep, qsAddEvent } from "./Utils";
 
 export class DeleteDataHandler {

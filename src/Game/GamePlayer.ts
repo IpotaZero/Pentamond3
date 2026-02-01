@@ -1,4 +1,4 @@
-import { LoopManager } from "../LoopManager";
+import { LoopManager } from "../UtilManagers/LoopManager";
 import { MondOperator } from "../BlockOperate/MondOperator";
 import { NuisanceMondManager } from "./NuisanceMondManager";
 import { Input } from "../Interaction/Input";
@@ -253,6 +253,7 @@ export class GamePlayer {
         Object.values(this.animations).forEach((animation) => {
             animation.cancel();
         });
+        this.loop.s$loopFrequency = 1000 / 60;
     }
 
     get g$element(): HTMLDivElement {

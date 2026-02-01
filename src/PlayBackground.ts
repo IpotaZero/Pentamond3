@@ -1,4 +1,4 @@
-import { LoopManager } from "./LoopManager";
+import { LoopManager } from "./UtilManagers/LoopManager";
 import { qs } from "./Utils";
 import { Vector } from "./Vector";
 

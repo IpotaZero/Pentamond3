@@ -1,7 +1,7 @@
-import { EventManager } from "../../EventManager";
+import { EventManager } from "../../UtilManagers/EventManager";
 import { gameEvents, GameMode } from "../GameMode";
 import { GamePlayer } from "../GamePlayer";
-import { pageManager } from "../../PageManager";
+import { pageManager } from "../../UtilManagers/PageManager";
 import * as Setting from "../../Settings";
 import { qsAll, removeMousePointerTemporary } from "../../Utils";
 import { playBackground } from "../../PlayBackground";

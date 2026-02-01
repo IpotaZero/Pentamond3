@@ -29,13 +29,12 @@ export class EventManager {
     }
 
     /**
+     * 指定されたhandlerやその他の情報を持つeventを追加する
      * @param id イベントのid　すでに存在すると失敗する　指定しない場合は自動で割り振る
      * @param handler イベントの処理　必須
      * @param classNames イベントのクラス
      * @returns 追加された/しようとしたイベントのid
      */
-    //指定されたhandlerやその他の情報を持つeventを追加する
-    //idは指定しなかった場合、被らないように自動的に設定される
     static addEvent({ id, handler, classNames = [] }: { id?: EventId; handler: Function; classNames?: string[] }): EventId {
         if (id) {
             if (!this.ids.includes(id)) {
@@ -46,10 +45,7 @@ export class EventManager {
             return id;
         } else {
             id = Date.now();
-            const ids = this.ids;
-            while (ids.includes(id)) {
-                id++;
-            }
+            while (this.ids.includes(id)) id++;
             this.eventList.push({ id, handler, classNames });
             return id;
         }
@@ -83,7 +79,7 @@ export class EventManager {
      * @param eventId イベントのid
      * @returns idが登録されているか
      */
-    static hasAlreadyAdded(eventId: EventId): boolean {
+    static notExists(eventId: EventId): boolean {
         if (!this.ids.includes(eventId)) {
             console.error("指定されたidのEventは登録されていません");
             return true;
@@ -96,7 +92,7 @@ export class EventManager {
      * @param eventId 実行したいイベントのid
      */
     static executeEvent(eventId: EventId): void {
-        if (this.hasAlreadyAdded(eventId)) {
+        if (this.notExists(eventId)) {
             return;
         }
         this.eventList.filter(({ id }) => id == eventId)[0].handler();

@@ -1,7 +1,7 @@
-import { EventManager } from "../../EventManager";
+import { EventManager } from "../../UtilManagers/EventManager";
 import { gameEvents, GameMode } from "../GameMode";
 import { GamePlayer } from "../GamePlayer";
-import { pageManager } from "../../PageManager";
+import { pageManager } from "../../UtilManagers/PageManager";
 import * as Setting from "../../Settings";
 import { qsAll, removeMousePointerTemporary } from "../../Utils";
 import { playBackground } from "../../PlayBackground";
@@ -70,10 +70,10 @@ export class Mode1 extends GameMode {
             const max = Math.max(
                 ...this.players.map((player) => {
                     player.updateGameTime();
-                    return player.playInfo.gameTime;
+                    return player.loop.g$elapsedTime;
                 })
             );
-            this.winners = this.players.filter((player) => player.playInfo.gameTime == max);
+            this.winners = this.players.filter((player) => player.loop.g$elapsedTime == max);
         }
         //勝敗が決しているなら終了
         if (this.winners.length > 0) {

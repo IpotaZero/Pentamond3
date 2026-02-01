@@ -1,4 +1,4 @@
-import { MyEventListener, EventId, EventManager } from "../EventManager";
+import { MyEventListener, EventId, EventManager } from "../UtilManagers/EventManager";
 
 export class KeyboardManager implements MyEventListener {
     private pressingKeys: string[] = [];

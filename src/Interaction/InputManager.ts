@@ -1,4 +1,4 @@
-import { EventId, EventManager } from "../EventManager";
+import { EventId, EventManager } from "../UtilManagers/EventManager";
 import { Input } from "./Input";
 
 class InputManager {

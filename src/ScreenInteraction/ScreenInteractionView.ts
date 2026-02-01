@@ -1,5 +1,6 @@
 import { MappedElement } from "./ScreenInteraction";
 import { qsAddEvent, qsAll, qs, getMinElement } from "../Utils";
+import { elementManager } from "../UtilManagers/ElementManager";
 
 export class ScreenInteractionView {
     focusOnPageChange = false;
@@ -21,6 +22,7 @@ export class ScreenInteractionView {
             .filter((e) => e instanceof HTMLElement)
             .forEach((button) => {
                 this.setHoverHighlight(button);
+                this.setFocusScroll(button);
             });
     }
 
@@ -113,6 +115,12 @@ export class ScreenInteractionView {
             if (document.activeElement == button) {
                 button.blur();
             }
+        });
+    }
+
+    setFocusScroll(button: HTMLElement): void {
+        button.addEventListener("focus", () => {
+            elementManager.scrollCenter(button);
         });
     }
 

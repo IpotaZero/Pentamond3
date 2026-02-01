@@ -1,6 +1,6 @@
-import { EventId, EventManager, MyEventListener } from "../EventManager";
+import { EventId, EventManager, MyEventListener } from "../UtilManagers/EventManager";
 import { inputManager } from "../Interaction/InputManager";
-import { pageManager } from "../PageManager";
+import { pageManager } from "../UtilManagers/PageManager";
 import { sleep, qs } from "../Utils";
 import * as Setting from "../Settings";
 import { GameProcessing } from "../GameProcessing/GameProcessing";
@@ -24,9 +24,9 @@ class ScreenInteraction implements MyEventListener {
     private readonly operationRunner = new ScreenInteractionOperationRunner(this.view);
 
     /**
-     * @param interaction すべての操作
-     * @param confirmInteraction 決定などの操作　いわゆる〇ボタン
-     * @param cancelInteraction キャンセルなどの操作  いわゆる×ボタン
+     * @param interaction-ページ名 すべての操作
+     * @param confirmInteraction-ページ名 決定などの操作　いわゆる〇ボタン
+     * @param cancelInteraction-ページ名 キャンセルなどの操作  いわゆる×ボタン
      */
     readonly eventClassNames: string[] = ["interaction", "confirmInteraction", "cancelInteraction"];
     addEvent(classNames: string[], handler: Function): EventId {
@@ -126,13 +126,6 @@ export const screenInteraction = new ScreenInteraction();
 
 screenInteraction.addEvent(["interaction"], () => {
     const currentPageId = pageManager.g$currentPageId;
-
-    if (currentPageId == "pageStart") {
-        qs("#pageStart").click();
-        screenInteraction.updateLastOperationTime();
-        return;
-    }
-
     if (currentPageId == "play") {
         const pauseInteractions = ["KeyP", ...Setting.gamepadConfigPresets[0].pause];
 

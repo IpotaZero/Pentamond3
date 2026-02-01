@@ -13,13 +13,14 @@
     </head>
     <body data-initial-page="pageStart">
         <div id="invalidPanel">
-            <div class="label">NowLoading......</div>
-            <div id="loadingCircle"></div>
+            <div class="label">読み込み中……</div>
+            <div id="loadingCircle">▲</div>
         </div>
 
         <div class="page" id="pageStart">
             <!-- prettier-ignore -->
-            <div class="label autoDynamicText" id="pageStartLabel">Press any key to start!</div>
+            <div class="label autoDynamicText" id="pageStartLabel">クリックしてスタート！</div>
+            <div class="label">(音が出ます)</div>
         </div>
 
         <div class="page" id="title">
@@ -161,7 +162,7 @@
             </div>
             <div class="options" data-direction="row">
                 <button data-mapping="[0,1]" data-back="3">モード選択</button>
-                <button data-mapping="[1,1]" data-back="-1">タイトルへ</button>
+                <button data-mapping="[1,1]" data-back="-1" data-page="title">タイトルへ</button>
             </div>
         </div>
 
@@ -173,7 +174,7 @@
             </div>
             <div class="options" data-direction="row">
                 <button data-mapping="[0,1]" data-back="2">リプレイ一覧へ</button>
-                <button data-mapping="[1,1]" data-back="-1">タイトルへ</button>
+                <button data-mapping="[1,1]" data-back="-1" data-page="title">タイトルへ</button>
             </div>
         </div>
 
@@ -194,7 +195,7 @@
                 <button class="saveReplayButton" data-mapping="[1,1]"></button>
             </div>
             <div class="options" data-direction="row">
-                <button data-mapping="[1,2]" data-back="-1">タイトルへ</button>
+                <button data-mapping="[1,2]" data-back="-1" data-page="title">タイトルへ</button>
             </div>
         </div>
 
@@ -204,7 +205,7 @@
             <div class="options" data-direction="row">
                 <button class="replayStart" data-mapping="[0,0]">もう一度</button>
                 <button data-mapping="[1,0]" data-back="2">リプレイ一覧へ</button>
-                <button data-mapping="[2,0]" data-back="-1">タイトルへ</button>
+                <button data-mapping="[2,0]" data-back="-1" data-page="title">タイトルへ</button>
                 <button data-mapping="[3,0]" data-page="detailedResult">詳細結果</button>
             </div>
         </div>
@@ -339,13 +340,13 @@
                         <div class="text">お気に入りのプレイを最大で10件まで保存できるよ！</div>
                     </div>
                     <div>
-                        <div class="text"></div>
+                        <div class="text">今までのこのゲームの意外な記録が見れるよ！</div>
                     </div>
                     <div>
-                        <div class="text"></div>
+                        <div class="text">自分が世界で何番目か確認してみよう！</div>
                     </div>
                     <div>
-                        <div class="text"></div>
+                        <div class="text">決められたお題に挑戦してみよう！</div>
                     </div>
                 </div>
             </div>
@@ -471,6 +472,27 @@
             </div>
 
             <button class="back" data-mapping="[0,2]">戻る</button>
+        </div>
+
+        <div class="page" id="bgmSetting">
+            <div class="label headingLabel">BGM設定</div>
+            <div class="options" data-direction="row">
+                <div class="label">プレイ時BGM：</div>
+                <div class="selector" data-page="bgmSelector1" data-mapping="[0,0]"></div>
+            </div>
+            <button class="back" data-mapping="[-1,1]">戻る</button>
+        </div>
+
+        <div class="page" id="bgmSelector1">
+            <div class="label headingLabel">BGMを選択してください</div>
+            <div class="scrollableContainer">
+                <button data-mapping="[0,0]">つみきのおしろ</button>
+                <button class="selectedValue" data-mapping="[0,1]">ならべてトライアングル</button>
+                <button data-mapping="[0,2]">おかたづけ</button>
+                <button data-mapping="[0,3]">さよならさんかく</button>
+                <button data-mapping="[0,4]">Top of the Pyramid</button>
+            </div>
+            <button class="back" data-mapping="[0,5]">戻る</button>
         </div>
 
         <div class="page" id="graphicSetting">

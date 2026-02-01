@@ -1,6 +1,6 @@
 import { BlockManager } from "../BlockOperate/BlockManager";
-import { EventId, EventManager, MyEventListener } from "../EventManager";
-import { LoopManager } from "../LoopManager";
+import { EventId, EventManager, MyEventListener } from "../UtilManagers/EventManager";
+import { LoopManager } from "../UtilManagers/LoopManager";
 import { Monoiamond } from "../BlockOperate/Monoiamond";
 import * as Setting from "../Settings";
 import { gameEvents } from "./GameMode";

@@ -50,83 +50,16 @@ export class PageManager implements MyEventListener {
     /**
      * 現在のページのid
      */
-    get g$currentPageId(): string | null {
-        return this.currentPage ? this.currentPage.id : null;
-    }
-
-    /**
-     * 表示されているページの配列
-     */
-    get g$displayingPages(): HTMLElement[] {
-        return [...this.displayingPages];
-    }
-
-    /**
-     * ページの遷移記録
-     */
-    get g$pageMemory(): string[][] {
-        return structuredClone(this.pageMemory);
-    }
-
-    /**
-     * 現在のページのレイヤー
-     */
-    get g$currentLayer(): number | null {
-        return parseInt(this.currentPage!.dataset.layer || "0");
+    get g$currentPageId(): string {
+        return this.currentPage ? this.currentPage.id : "";
     }
 
     //DOMが読み込まれてから読み込んでね
     init() {
-        if (this.initialized) {
-            return;
-        }
+        if (this.initialized) return;
         //最初に開くページ
         const initialPageId = document.body.dataset.initialPage || "title";
         this.setPage(initialPageId);
-
-        //pageを戻る処理
-        document.querySelectorAll(".back, [data-back]").forEach((element) => {
-            element.addEventListener("click", () => {
-                const back = parseInt((element as HTMLElement).dataset.back || "1");
-                this.backPages(back);
-            });
-        });
-
-        //page遷移処理
-        document.querySelectorAll("[data-page]").forEach((element) => {
-            element.addEventListener("click", () => {
-                const pageId = (element as HTMLElement).dataset.page;
-                if (pageId) {
-                    this.setPage(pageId);
-                }
-            });
-        });
-
-        //layerの反映
-        document.querySelectorAll(".page[data-layer]").forEach((element) => {
-            const layer = (element as HTMLElement).dataset.layer;
-            (element as HTMLElement).style.zIndex = layer || "0";
-        });
-
-        //subPageの挙動
-        document.querySelectorAll<HTMLElement>(".page:has(.subPageNext)").forEach((element) => {
-            const prevElements = Array.from(element.querySelectorAll<HTMLElement>(".subPagePrev"));
-            const nextElements = Array.from(element.querySelectorAll<HTMLElement>(".subPageNext"));
-            prevElements.forEach((prev) => {
-                prev.addEventListener("click", () => {
-                    const length = Array.from(element.querySelectorAll<HTMLElement>(".subPage")).length;
-                    const prevIndex = (length + this.getSubPageIndex(element)! - 1) % length;
-                    this.setSubPage(prevIndex);
-                });
-            });
-            nextElements.forEach((next) => {
-                next.addEventListener("click", () => {
-                    const length = Array.from(element.querySelectorAll<HTMLElement>(".subPage")).length;
-                    const nextIndex = (this.getSubPageIndex(element)! + 1) % length;
-                    this.setSubPage(nextIndex);
-                });
-            });
-        });
 
         this.initialized = true;
         EventManager.executeEventsByClassName("pageIsReady");
@@ -134,34 +67,24 @@ export class PageManager implements MyEventListener {
 
     //すべてのページの表示状態を設定する
     private setPages(pageIds: string[], options?: PageManagerOption) {
-        // 新しいページを取得
+        if (!pageIds.length) return;
+
         const nextPages = pageIds.map((pageId) => document.getElementById(pageId) || null);
-        if (nextPages.includes(null)) {
-            console.error("指定されたpageIdsに存在しないページが含まれていました");
-            return;
-        }
+        if (nextPages.includes(null)) return;
+
+        const layerArray = nextPages.map((page) => this.getLayer(page!)!);
+        const maxLayer = Math.max(...layerArray);
+        //最大layerは一意か
+        if (layerArray.filter((layer) => layer === maxLayer).length != 1) return;
 
         this.displayingPages.forEach((page) => {
             page.style.display = "none";
         });
-
         nextPages.forEach((page) => {
             page!.style.display = "flex";
         });
 
-        let preliminaryCurrentPage: HTMLElement | null = null;
-        nextPages.forEach((page) => {
-            const layer = parseInt(page!.dataset.layer || "0");
-            let preliminaryMaxLayer = preliminaryCurrentPage ? parseInt(preliminaryCurrentPage.dataset.layer || "0") : 0;
-            if (preliminaryMaxLayer < layer || preliminaryCurrentPage == null) {
-                preliminaryCurrentPage = page;
-                preliminaryMaxLayer = layer;
-            } else if (preliminaryMaxLayer == layer && preliminaryCurrentPage != null) {
-                console.error("最大layerが一意になっていません");
-            }
-        });
-
-        this.currentPage = preliminaryCurrentPage as HTMLElement | null;
+        this.currentPage = nextPages[layerArray.findIndex((layer) => layer == maxLayer)];
         this.displayingPages = nextPages as HTMLElement[];
         this.pageMemory.push(pageIds);
         this.setSubPage(0, { eventIgnore: true });
@@ -181,24 +104,20 @@ export class PageManager implements MyEventListener {
             return;
         }
 
-        let nextDisplayingPages = [...this.displayingPages];
-
+        let nextDisplayingPageIds = this.displayingPages.map((page) => page.id);
         // 現在のページを非表示にする
         if (this.currentPage) {
-            const currentLayer = parseInt(this.currentPage.dataset.layer || "0");
-            const nextLayer = parseInt(nextPage.dataset.layer || "0");
+            const currentLayer = this.getLayer(this.currentPage)!;
+            const nextLayer = this.getLayer(nextPage)!;
             //同じlayerなら元のページは非表示
             if (nextLayer == currentLayer) {
-                nextDisplayingPages = nextDisplayingPages.filter((page) => page.id != this.currentPage!.id);
+                nextDisplayingPageIds = nextDisplayingPageIds.filter((id) => id != this.currentPage!.id);
             } else if (nextLayer < currentLayer) {
-                throw new Error(`現在のlayerを下回るlayerのページには遷移できません: ${pageId}`);
+                throw new Error(`現在のlayerを下回るlayerのページには遷移できません:${this.currentPage.id}から${pageId}`);
             }
         }
-        nextDisplayingPages.push(nextPage);
-        this.setPages(
-            nextDisplayingPages.map((page) => page.id),
-            options
-        );
+        nextDisplayingPageIds.push(nextPage.id);
+        this.setPages(nextDisplayingPageIds, options);
         if (!(options && options.eventIgnore)) {
             EventManager.executeEventsByClassName("setPage");
             EventManager.executeEventsByClassName("setPage-" + pageId);
@@ -213,14 +132,14 @@ export class PageManager implements MyEventListener {
             number = this.pageMemory.length - 1;
         }
         if (this.pageMemory.length < number + 1 || number < -1) {
-            console.log("ページ遷移の記録がないため戻ることはできません");
+            console.log(`ページ遷移の記録がないため戻ることはできません:${this.g$currentPageId}から${number}ページ前`);
             return;
         }
-        const currentLayer = this.g$currentLayer!;
+        const currentLayer = this.getLayer(this.currentPage) || 0;
         this.setPages(this.pageMemory[this.pageMemory.length - number - 1], options);
         this.pageMemory = this.pageMemory.slice(0, -number - 1);
         if (!(options && options.eventIgnore)) {
-            if (currentLayer == this.g$currentLayer) {
+            if (currentLayer == (this.getLayer(this.currentPage) || 0)) {
                 EventManager.executeEventsByClassName("pageOpened");
                 EventManager.executeEventsByClassName("pageOpened-" + this.currentPage!.id);
             }
@@ -261,23 +180,22 @@ export class PageManager implements MyEventListener {
      */
     backLatestPage(pageId: string, options?: PageManagerOption) {
         const index = this.getLatestBackIndex(pageId);
-        if (index == -1) {
-            return;
-        }
+        if (index == -1) return;
+
         this.backPages(index, options);
     }
 
     setSubPage(index: number, options?: PageManagerOption) {
-        if (!this.currentPage || !this.currentPage.querySelector(`.subPage`)) {
-            return;
-        }
+        if (!this.currentPage || !this.currentPage.querySelector(`.subPage`)) return;
+
         const subPages = Array.from(this.currentPage.querySelectorAll<HTMLElement>(".subPage"));
         const subPageLabel = this.currentPage.querySelector(".subPageLabel");
+        const fixedIndex = (subPages.length + index) % subPages.length;
         subPages.forEach((subPage, i) => {
-            if (i == index) {
+            if (i == fixedIndex) {
                 subPage.style.display = "";
                 if (subPageLabel) {
-                    subPageLabel.innerHTML = `${index + 1} / ${subPages.length}`;
+                    subPageLabel.innerHTML = `${fixedIndex + 1} / ${subPages.length}`;
                 }
             } else {
                 subPage.style.display = "none";
@@ -288,12 +206,8 @@ export class PageManager implements MyEventListener {
         }
     }
 
-    getSubPageIndex(page: HTMLElement): number | null {
-        if (!page || !page.querySelector(`.subPage`)) {
-            return null;
-        }
-        const subPages = Array.from(page.querySelectorAll<HTMLElement>(".subPage"));
-        return subPages.findIndex((subPage) => subPage.style.display != "none");
+    private getLayer(element: HTMLElement | null): number | null {
+        return element ? parseInt(element.dataset.layer || "0") : null;
     }
 }
 

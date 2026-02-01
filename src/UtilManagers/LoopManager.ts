@@ -4,14 +4,15 @@ import { TimeManager } from "./TimeManager.js";
 export class LoopManager implements MyEventListener {
     /**
      * 目標ループ頻度(ms)
-     * requestAnimationFrameの頻度が最速
-     * 0なら自動的に最速
+     * requestAnimationFrameより早い場合自動的にある程度辻褄合わせする
+     * 0ならrequestAnimationFrameと同じ頻度
      */
     private loopFrequency: number = 0;
     private loopTimer: TimeManager | null = null;
-    private lastLoopCount = 0;
+    private loopCount = 0;
     private loopId: number | null = null;
     private isLooping: boolean = false;
+    private speedMagnification = 1;
     /**
      * @param loop ループをしたとき
      */
@@ -47,13 +48,41 @@ export class LoopManager implements MyEventListener {
     }
 
     /**
+     * ループ回数
+     */
+    get g$loopCount(): number {
+        return this.loopCount;
+    }
+
+    /**
+     * 現実時間に対するループスピードの倍率
+     */
+    get g$speedMagnification(): number {
+        return this.speedMagnification;
+    }
+
+    /**
      * @param frequency 設定したいループ頻度
      */
     set s$loopFrequency(frequency: number) {
-        if (!Number.isSafeInteger(frequency) || frequency <= 0) {
+        if (Number.isNaN(frequency) || !Number.isFinite(frequency) || frequency <= 0) {
             throw new Error("不正な値が入力されました: " + frequency);
         }
         this.loopFrequency = frequency;
+    }
+
+    /**
+     * @param speedMagnification 現実時間に対するループスピードの倍率
+     */
+    set s$speedMagnification(speedMagnification: number) {
+        if (Number.isNaN(speedMagnification) || !Number.isFinite(speedMagnification) || speedMagnification <= 0) {
+            throw new Error("不正な値が入力されました: " + speedMagnification);
+        }
+        if (this.isLooping) {
+            console.error("ループ中にはスピード倍率を変更できません");
+            return;
+        }
+        this.speedMagnification = speedMagnification;
     }
 
     /**
@@ -94,7 +123,7 @@ export class LoopManager implements MyEventListener {
             this.loopTimer.reset();
             this.loopTimer = null;
         }
-        this.lastLoopCount = 0;
+        this.loopCount = 0;
     }
 
     /**
@@ -108,10 +137,17 @@ export class LoopManager implements MyEventListener {
             this.stop();
             return;
         }
-        const loopCount = this.loopTimer!.getGoalCount(this.loopFrequency);
-        if (this.lastLoopCount != loopCount || loopCount == Infinity) {
-            this.lastLoopCount = loopCount;
-            EventManager.executeListeningEvents("loop", this.eventIds);
+        const goalLoopCount = this.loopTimer!.getGoalCount(this.loopFrequency);
+        if (this.loopCount != goalLoopCount) {
+            if (goalLoopCount == Infinity) {
+                EventManager.executeListeningEvents("loop", this.eventIds);
+                this.loopCount++;
+            } else {
+                while (this.loopCount < goalLoopCount) {
+                    EventManager.executeListeningEvents("loop", this.eventIds);
+                    this.loopCount++;
+                }
+            }
         }
         this.loopId = requestAnimationFrame(this.loop.bind(this));
     }
@@ -123,7 +159,7 @@ export class LoopManager implements MyEventListener {
         if (!this.loopTimer) {
             return 0;
         }
-        return this.loopTimer.g$elapsedTime!;
+        return this.loopTimer.g$elapsedTime! * this.speedMagnification;
     }
 
     /**
@@ -134,6 +170,6 @@ export class LoopManager implements MyEventListener {
         if (!this.loopTimer) {
             return 0;
         }
-        return Math.floor(this.g$elapsedTime / goal);
+        return Math.floor((this.g$elapsedTime * this.speedMagnification) / goal);
     }
 }
