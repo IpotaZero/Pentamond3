@@ -104,7 +104,7 @@ export class DisposableGame {
     }
 
     private static createPlayers(maxGameTime: number, inputs: Input[], inputCount: number, { replayData }: { replayData?: ReplayData }) {
-        const players = inputs.map((input) => new GamePlayer(input));
+        const players = inputs.map((input) => new GamePlayer(input, inputCount));
 
         players.forEach((player, i) => {
             if (inputCount == 1) {

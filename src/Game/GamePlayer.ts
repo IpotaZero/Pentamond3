@@ -12,11 +12,16 @@ import { GraphicSetting } from "../GraphicSetting";
 export class GamePlayer {
     operator: MondOperator = new MondOperator();
     loop: LoopManager = new LoopManager();
-    nuisanceMondManager: NuisanceMondManager;
+
     canvas: CanvasManager = new CanvasManager();
-    label: InformationLabelManager = new InformationLabelManager();
+
+    nuisanceMondManager: NuisanceMondManager;
+    label: InformationLabelManager;
+
     input: Input;
+
     playField: HTMLDivElement = document.createElement("div");
+
     playInfo = {
         maxGameTime: 300,
         gameTime: 300,
@@ -37,10 +42,12 @@ export class GamePlayer {
         remove: 0,
         handy: 1,
     };
+
     state = {
         hasFinished: false,
         damaging: false,
     };
+
     damageInfo = {
         damageTask: 0,
         temporaryDamageTask: 0,
@@ -49,6 +56,7 @@ export class GamePlayer {
         totalDamage: 0,
         totalAttack: 0,
     };
+
     animations = {
         put: this.playField.animate(
             [
@@ -212,9 +220,12 @@ export class GamePlayer {
             }
         ),
     };
+
     runningAnimations: Animation[] = [];
 
-    constructor(input: Input) {
+    constructor(input: Input, playerNum: number) {
+        this.label = new InformationLabelManager(playerNum);
+
         this.nuisanceMondManager = new NuisanceMondManager(this.operator.blockManager);
 
         gameEvents.push(
