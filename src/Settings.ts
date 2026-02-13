@@ -73,7 +73,7 @@ export const damageWaitingTime = 4000;
 //nuisanceMondが生成される間隔
 export const damageGrace = 3;
 export const input = {
-    repeatTime: 35,
+    repeatTime: 33,
     delayTime: 135,
 };
 //カウントが1減る時間(ms)
