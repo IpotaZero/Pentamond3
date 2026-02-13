@@ -108,10 +108,10 @@ export class LoopManager implements MyEventListener {
         if (this.loopTimer) {
             this.loopTimer.pause();
         }
+        this.isLooping = false;
         if (this.loopId) {
             cancelAnimationFrame(this.loopId);
         }
-        this.isLooping = false;
     }
 
     /**
@@ -144,6 +144,9 @@ export class LoopManager implements MyEventListener {
                 this.loopCount++;
             } else {
                 while (this.loopCount < goalLoopCount) {
+                    if (!this.isLooping) {
+                        break;
+                    }
                     EventManager.executeListeningEvents("loop", this.eventIds);
                     this.loopCount++;
                 }
