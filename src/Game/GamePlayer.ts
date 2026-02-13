@@ -8,13 +8,14 @@ import { TrickInfo } from "../Trick";
 import * as Setting from "../Settings";
 import { gameEvents } from "./GameMode";
 import { GraphicSetting } from "../GraphicSetting";
+import { inputManager } from "../Interaction/InputManager";
 
 export class GamePlayer {
     operator: MondOperator = new MondOperator();
     loop: LoopManager = new LoopManager();
     nuisanceMondManager: NuisanceMondManager;
     canvas: CanvasManager = new CanvasManager();
-    label: InformationLabelManager = new InformationLabelManager();
+    label: InformationLabelManager = new InformationLabelManager(inputManager.g$registeredInputNumber);
     input: Input;
     playField: HTMLDivElement = document.createElement("div");
     playInfo = {
